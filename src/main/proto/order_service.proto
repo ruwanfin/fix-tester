@@ -1,0 +1,81 @@
+syntax = "proto3";
+
+option java_multiple_files = true;
+option java_package = "com.finexa.orderManage.core.grpc";
+option java_outer_classname = "OrderServiceProto";
+
+package order;
+
+// -------------------------
+// SERVICE
+// -------------------------
+
+service OrderService {
+  rpc ProcessOrder (OrderRequestGRPC) returns (OrderResponseGRPC);
+}
+// -------------------------
+// HEADER
+// -------------------------
+message FineXaMsgHeaderGRPC {
+  int32 product     = 1;
+  string tenantCode  = 2;
+  int32 loginId     = 3;
+  string clientIp    = 4;
+  string sessionId   = 5;
+  string componentId = 6;
+  string unqReqId    = 7;
+}
+
+// -------------------------
+// REQUEST WRAPPER
+// -------------------------
+message OrderRequestGRPC {
+  FineXaMsgHeaderGRPC header = 1;
+  int32 serviceType = 2;
+  int64 timestamp = 3;
+  OrderRequestBodyGRPC data = 4;
+}
+
+
+// -------------------------
+// REQUEST BODY
+// -------------------------
+message OrderRequestBodyGRPC {
+  string symbol = 1;
+  double price = 2;
+  int32 tradingAccountID = 3;
+  string exchange = 4;
+  string type = 5;
+  int32 side = 6;
+  int64 quantity = 7;
+  int32 tif = 8;
+  string tradeDate = 9;
+  string customerNo = 10;
+  string clOrdId = 11;
+  int32 orderMode = 12;
+  int32 ordCat = 13;
+  int32 bypassRms = 14;
+  string remark = 15;
+  int32 execBrokerID = 16;
+  int32 custodianID = 17;
+}
+
+// -------------------------
+// RESPONSE WRAPPER
+// -------------------------
+message OrderResponseGRPC {
+  int32 serviceType = 1;
+  int64 timestamp = 2;
+  int32 statusCode = 3;
+  FineXaMsgHeaderGRPC header = 4;
+  OrderResponseBodyGRPC data = 5;
+}
+
+message OrderResponseBodyGRPC {
+  int32 status = 1;
+  string reference = 2;
+  string statusDescription = 3;
+  int32 errorCode = 4;
+  string errorMessage = 5;
+  string errorDetail = 6;
+}

@@ -1,0 +1,11 @@
+grpc:
+  client:
+    order-service:
+      address: 'static://localhost:9092'   # gRPC server location
+      negotiationType: plaintext
+
+  server:
+    enabled: false  # Don't start a gRPC server in this client project
+
+server:
+  port: 8088  # Just for Spring Boot web context (not required for gRPC)

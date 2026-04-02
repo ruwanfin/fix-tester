@@ -1,0 +1,94 @@
+syntax = "proto3";
+
+option java_multiple_files = true;
+option java_package = "com.finexa.orderManage.core.grpc";
+option java_outer_classname = "OrderServiceProto";
+
+package order;
+
+// -------------------------
+// SERVICE
+// -------------------------
+
+service OrderService {
+  rpc ProcessOrder (OrderRequestGRPC) returns (OrderResponseGRPC);
+}
+// -------------------------
+// HEADER
+// -------------------------
+message FineXaMsgHeaderGRPC {
+  int32 product     = 1;
+  string tenantCode  = 2;
+  int32 loginId     = 3;
+  string clientIp    = 4;
+  string sessionId   = 5;
+  string componentId = 6;
+  string unqReqId    = 7;
+}
+
+// -------------------------
+// REQUEST WRAPPER
+// -------------------------
+message OrderRequestGRPC {
+  FineXaMsgHeaderGRPC header = 1;
+  int32 serviceType = 2;
+  int64 timestamp = 3;
+  OrderRequestBodyGRPC data = 4;
+}
+
+
+// -------------------------
+// REQUEST BODY
+// -------------------------
+message OrderRequestBodyGRPC {
+  string symbol = 1;
+  double price = 2;
+  int64 discloseQty = 3;
+  string marketCode = 4;
+  int32 tradingAccountID = 5;
+  string exchange = 6;
+  string type = 7;
+  int32 side = 8;
+  int64 quantity = 9;
+  int32 tif = 10;
+  int64 minFilQty = 11;
+  int32 dayOrd = 12;
+  string instrumentTypeCode = 13;
+  string tradeDate = 14;
+  string customerNo = 15;
+  int32 cashAcntID = 16;
+  string clOrdId = 17;
+  string empId = 18;
+  int32 orderMode = 19;
+  string transactionID = 20;
+  string narration = 21;
+  string pOA = 22;
+  int32 ordCat = 23;
+  int32 pvtOrderStatus = 24;
+  string intOrdStatus = 25;
+  double customerCommOver = 26;
+  string positionEffect = 27;
+  int32 bypassRms = 28;
+  string remark = 29;
+  int32 execBrokerID = 30;
+  int32 custodianID = 31;
+}
+
+// -------------------------
+// RESPONSE WRAPPER
+// -------------------------
+message OrderResponseGRPC {
+  int32 serviceType = 1;
+  int64 timestamp = 2;
+  int32 statusCode = 3;
+  FineXaMsgHeaderGRPC header = 4;
+  OrderResponseBodyGRPC data = 5;
+}
+
+message OrderResponseBodyGRPC {
+  int32 status = 1;
+  string statusDescription = 2;
+  int32 errorCode = 3;
+  string errorMessage = 4;
+  string errorDetail = 5;
+}
