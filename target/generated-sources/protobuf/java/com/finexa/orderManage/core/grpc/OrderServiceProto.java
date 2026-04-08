@@ -60,35 +60,35 @@ public final class OrderServiceProto {
       descriptor;
   static {
     java.lang.String[] descriptorData = {
-      "\n\023order_service.proto\022\005order\"\227\001\n\023FineXaM" +
+      "\n\023order_service.proto\022\005order\"\246\001\n\023FineXaM" +
       "sgHeaderGRPC\022\017\n\007product\030\001 \001(\005\022\022\n\ntenantC" +
       "ode\030\002 \001(\t\022\017\n\007loginId\030\003 \001(\005\022\020\n\010clientIp\030\004" +
       " \001(\t\022\021\n\tsessionId\030\005 \001(\t\022\023\n\013componentId\030\006" +
-      " \001(\t\022\020\n\010unqReqId\030\007 \001(\t\"\221\001\n\020OrderRequestG" +
-      "RPC\022*\n\006header\030\001 \001(\0132\032.order.FineXaMsgHea" +
-      "derGRPC\022\023\n\013serviceType\030\002 \001(\005\022\021\n\ttimestam" +
-      "p\030\003 \001(\003\022)\n\004data\030\004 \001(\0132\033.order.OrderReque" +
-      "stBodyGRPC\"\305\002\n\024OrderRequestBodyGRPC\022\016\n\006s" +
-      "ymbol\030\001 \001(\t\022\r\n\005price\030\002 \001(\001\022\030\n\020tradingAcc" +
-      "ountID\030\003 \001(\005\022\020\n\010exchange\030\004 \001(\t\022\014\n\004type\030\005" +
-      " \001(\t\022\014\n\004side\030\006 \001(\005\022\020\n\010quantity\030\007 \001(\003\022\013\n\003" +
-      "tif\030\010 \001(\005\022\021\n\ttradeDate\030\t \001(\t\022\022\n\ncustomer" +
-      "No\030\n \001(\t\022\017\n\007clOrdId\030\013 \001(\t\022\021\n\torderMode\030\014" +
-      " \001(\005\022\016\n\006ordCat\030\r \001(\005\022\021\n\tbypassRms\030\016 \001(\005\022" +
-      "\016\n\006remark\030\017 \001(\t\022\024\n\014execBrokerID\030\020 \001(\005\022\023\n" +
-      "\013custodianID\030\021 \001(\005\"\247\001\n\021OrderResponseGRPC" +
-      "\022\023\n\013serviceType\030\001 \001(\005\022\021\n\ttimestamp\030\002 \001(\003" +
-      "\022\022\n\nstatusCode\030\003 \001(\005\022*\n\006header\030\004 \001(\0132\032.o" +
-      "rder.FineXaMsgHeaderGRPC\022*\n\004data\030\005 \001(\0132\034" +
-      ".order.OrderResponseBodyGRPC\"\223\001\n\025OrderRe" +
-      "sponseBodyGRPC\022\016\n\006status\030\001 \001(\005\022\021\n\trefere" +
-      "nce\030\002 \001(\t\022\031\n\021statusDescription\030\003 \001(\t\022\021\n\t" +
-      "errorCode\030\004 \001(\005\022\024\n\014errorMessage\030\005 \001(\t\022\023\n" +
-      "\013errorDetail\030\006 \001(\t2Q\n\014OrderService\022A\n\014Pr" +
-      "ocessOrder\022\027.order.OrderRequestGRPC\032\030.or" +
-      "der.OrderResponseGRPCB7\n com.finexa.orde" +
-      "rManage.core.grpcB\021OrderServiceProtoP\001b\006" +
-      "proto3"
+      " \001(\t\022\020\n\010unqReqId\030\007 \001(\t\022\r\n\005orgId\030\010 \001(\005\"\221\001" +
+      "\n\020OrderRequestGRPC\022*\n\006header\030\001 \001(\0132\032.ord" +
+      "er.FineXaMsgHeaderGRPC\022\023\n\013serviceType\030\002 " +
+      "\001(\005\022\021\n\ttimestamp\030\003 \001(\003\022)\n\004data\030\004 \001(\0132\033.o" +
+      "rder.OrderRequestBodyGRPC\"\305\002\n\024OrderReque" +
+      "stBodyGRPC\022\016\n\006symbol\030\001 \001(\t\022\r\n\005price\030\002 \001(" +
+      "\001\022\030\n\020tradingAccountID\030\003 \001(\005\022\020\n\010exchange\030" +
+      "\004 \001(\t\022\014\n\004type\030\005 \001(\t\022\014\n\004side\030\006 \001(\005\022\020\n\010qua" +
+      "ntity\030\007 \001(\003\022\013\n\003tif\030\010 \001(\005\022\021\n\ttradeDate\030\t " +
+      "\001(\t\022\022\n\ncustomerNo\030\n \001(\t\022\017\n\007clOrdId\030\013 \001(\t" +
+      "\022\021\n\torderMode\030\014 \001(\005\022\016\n\006ordCat\030\r \001(\005\022\021\n\tb" +
+      "ypassRms\030\016 \001(\005\022\016\n\006remark\030\017 \001(\t\022\024\n\014execBr" +
+      "okerID\030\020 \001(\005\022\023\n\013custodianID\030\021 \001(\005\"\247\001\n\021Or" +
+      "derResponseGRPC\022\023\n\013serviceType\030\001 \001(\005\022\021\n\t" +
+      "timestamp\030\002 \001(\003\022\022\n\nstatusCode\030\003 \001(\005\022*\n\006h" +
+      "eader\030\004 \001(\0132\032.order.FineXaMsgHeaderGRPC\022" +
+      "*\n\004data\030\005 \001(\0132\034.order.OrderResponseBodyG" +
+      "RPC\"\223\001\n\025OrderResponseBodyGRPC\022\016\n\006status\030" +
+      "\001 \001(\005\022\021\n\treference\030\002 \001(\t\022\031\n\021statusDescri" +
+      "ption\030\003 \001(\t\022\021\n\terrorCode\030\004 \001(\005\022\024\n\014errorM" +
+      "essage\030\005 \001(\t\022\023\n\013errorDetail\030\006 \001(\t2Q\n\014Ord" +
+      "erService\022A\n\014ProcessOrder\022\027.order.OrderR" +
+      "equestGRPC\032\030.order.OrderResponseGRPCB7\n " +
+      "com.finexa.orderManage.core.grpcB\021OrderS" +
+      "erviceProtoP\001b\006proto3"
     };
     descriptor = com.google.protobuf.Descriptors.FileDescriptor
       .internalBuildGeneratedFileFrom(descriptorData,
@@ -99,7 +99,7 @@ public final class OrderServiceProto {
     internal_static_order_FineXaMsgHeaderGRPC_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessage.FieldAccessorTable(
         internal_static_order_FineXaMsgHeaderGRPC_descriptor,
-        new java.lang.String[] { "Product", "TenantCode", "LoginId", "ClientIp", "SessionId", "ComponentId", "UnqReqId", });
+        new java.lang.String[] { "Product", "TenantCode", "LoginId", "ClientIp", "SessionId", "ComponentId", "UnqReqId", "OrgId", });
     internal_static_order_OrderRequestGRPC_descriptor =
       getDescriptor().getMessageTypes().get(1);
     internal_static_order_OrderRequestGRPC_fieldAccessorTable = new

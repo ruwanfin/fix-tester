@@ -271,6 +271,17 @@ private static final long serialVersionUID = 0L;
     }
   }
 
+  public static final int ORGID_FIELD_NUMBER = 8;
+  private int orgId_ = 0;
+  /**
+   * <code>int32 orgId = 8;</code>
+   * @return The orgId.
+   */
+  @java.lang.Override
+  public int getOrgId() {
+    return orgId_;
+  }
+
   private byte memoizedIsInitialized = -1;
   @java.lang.Override
   public final boolean isInitialized() {
@@ -306,6 +317,9 @@ private static final long serialVersionUID = 0L;
     if (!com.google.protobuf.GeneratedMessage.isStringEmpty(unqReqId_)) {
       com.google.protobuf.GeneratedMessage.writeString(output, 7, unqReqId_);
     }
+    if (orgId_ != 0) {
+      output.writeInt32(8, orgId_);
+    }
     getUnknownFields().writeTo(output);
   }
 
@@ -338,6 +352,10 @@ private static final long serialVersionUID = 0L;
     if (!com.google.protobuf.GeneratedMessage.isStringEmpty(unqReqId_)) {
       size += com.google.protobuf.GeneratedMessage.computeStringSize(7, unqReqId_);
     }
+    if (orgId_ != 0) {
+      size += com.google.protobuf.CodedOutputStream
+        .computeInt32Size(8, orgId_);
+    }
     size += getUnknownFields().getSerializedSize();
     memoizedSize = size;
     return size;
@@ -367,6 +385,8 @@ private static final long serialVersionUID = 0L;
         .equals(other.getComponentId())) return false;
     if (!getUnqReqId()
         .equals(other.getUnqReqId())) return false;
+    if (getOrgId()
+        != other.getOrgId()) return false;
     if (!getUnknownFields().equals(other.getUnknownFields())) return false;
     return true;
   }
@@ -392,6 +412,8 @@ private static final long serialVersionUID = 0L;
     hash = (53 * hash) + getComponentId().hashCode();
     hash = (37 * hash) + UNQREQID_FIELD_NUMBER;
     hash = (53 * hash) + getUnqReqId().hashCode();
+    hash = (37 * hash) + ORGID_FIELD_NUMBER;
+    hash = (53 * hash) + getOrgId();
     hash = (29 * hash) + getUnknownFields().hashCode();
     memoizedHashCode = hash;
     return hash;
@@ -536,6 +558,7 @@ private static final long serialVersionUID = 0L;
       sessionId_ = "";
       componentId_ = "";
       unqReqId_ = "";
+      orgId_ = 0;
       return this;
     }
 
@@ -590,6 +613,9 @@ private static final long serialVersionUID = 0L;
       if (((from_bitField0_ & 0x00000040) != 0)) {
         result.unqReqId_ = unqReqId_;
       }
+      if (((from_bitField0_ & 0x00000080) != 0)) {
+        result.orgId_ = orgId_;
+      }
     }
 
     @java.lang.Override
@@ -634,6 +660,9 @@ private static final long serialVersionUID = 0L;
         unqReqId_ = other.unqReqId_;
         bitField0_ |= 0x00000040;
         onChanged();
+      }
+      if (other.getOrgId() != 0) {
+        setOrgId(other.getOrgId());
       }
       this.mergeUnknownFields(other.getUnknownFields());
       onChanged();
@@ -696,6 +725,11 @@ private static final long serialVersionUID = 0L;
               bitField0_ |= 0x00000040;
               break;
             } // case 58
+            case 64: {
+              orgId_ = input.readInt32();
+              bitField0_ |= 0x00000080;
+              break;
+            } // case 64
             default: {
               if (!super.parseUnknownField(input, extensionRegistry, tag)) {
                 done = true; // was an endgroup tag
@@ -1133,6 +1167,38 @@ private static final long serialVersionUID = 0L;
       checkByteStringIsUtf8(value);
       unqReqId_ = value;
       bitField0_ |= 0x00000040;
+      onChanged();
+      return this;
+    }
+
+    private int orgId_ ;
+    /**
+     * <code>int32 orgId = 8;</code>
+     * @return The orgId.
+     */
+    @java.lang.Override
+    public int getOrgId() {
+      return orgId_;
+    }
+    /**
+     * <code>int32 orgId = 8;</code>
+     * @param value The orgId to set.
+     * @return This builder for chaining.
+     */
+    public Builder setOrgId(int value) {
+
+      orgId_ = value;
+      bitField0_ |= 0x00000080;
+      onChanged();
+      return this;
+    }
+    /**
+     * <code>int32 orgId = 8;</code>
+     * @return This builder for chaining.
+     */
+    public Builder clearOrgId() {
+      bitField0_ = (bitField0_ & ~0x00000080);
+      orgId_ = 0;
       onChanged();
       return this;
     }

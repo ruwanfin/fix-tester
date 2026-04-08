@@ -13,6 +13,7 @@ public class PlaceOrderRequest {
     private int    product     = 1;
     private String tenantCode  = "DEFAULT_TENANT";
     private int    loginId     = 6;
+    private int   orgId = 1;
     private String clientIp    = "127.0.0.1";
     private String sessionId;       // auto-generated if blank
     private String componentId = "ORDER-TESTER";

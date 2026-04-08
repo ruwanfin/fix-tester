@@ -81,4 +81,10 @@ public interface FineXaMsgHeaderGRPCOrBuilder extends
    */
   com.google.protobuf.ByteString
       getUnqReqIdBytes();
+
+  /**
+   * <code>int32 orgId = 8;</code>
+   * @return The orgId.
+   */
+  int getOrgId();
 }

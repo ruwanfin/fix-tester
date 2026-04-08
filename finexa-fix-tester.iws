@@ -4,7 +4,19 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="1ce119d0-8ea9-4e23-909b-9e58a28b6171" name="Changes" comment="FIX changes" />
+    <list default="true" id="1ce119d0-8ea9-4e23-909b-9e58a28b6171" name="Changes" comment="FIX changes">
+      <change beforePath="$PROJECT_DIR$/finexa-fix-tester.iws" beforeDir="false" afterPath="$PROJECT_DIR$/finexa-fix-tester.iws" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/finexa/fixtester/dto/PlaceOrderRequest.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/finexa/fixtester/dto/PlaceOrderRequest.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/finexa/fixtester/service/GrpcOrderService.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/finexa/fixtester/service/GrpcOrderService.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/proto/order_service.proto" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/proto/order_service.proto" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/target/classes/com/finexa/fixtester/controller/FIXClientController.class" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/target/classes/com/finexa/fixtester/service/FIXMessageService.class" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/target/classes/com/finexa/fixtester/util/FIXMessageBuilder.class" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/target/classes/order_service.proto" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/order_service.proto" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/target/generated-sources/protobuf/java/com/finexa/orderManage/core/grpc/FineXaMsgHeaderGRPC.java" beforeDir="false" afterPath="$PROJECT_DIR$/target/generated-sources/protobuf/java/com/finexa/orderManage/core/grpc/FineXaMsgHeaderGRPC.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/target/generated-sources/protobuf/java/com/finexa/orderManage/core/grpc/FineXaMsgHeaderGRPCOrBuilder.java" beforeDir="false" afterPath="$PROJECT_DIR$/target/generated-sources/protobuf/java/com/finexa/orderManage/core/grpc/FineXaMsgHeaderGRPCOrBuilder.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/target/generated-sources/protobuf/java/com/finexa/orderManage/core/grpc/OrderServiceProto.java" beforeDir="false" afterPath="$PROJECT_DIR$/target/generated-sources/protobuf/java/com/finexa/orderManage/core/grpc/OrderServiceProto.java" afterDir="false" />
+    </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
@@ -373,7 +385,7 @@
       <workItem from="1774756147001" duration="594000" />
       <workItem from="1774846012799" duration="11447000" />
       <workItem from="1775449655834" duration="4210000" />
-      <workItem from="1775636627434" duration="302000" />
+      <workItem from="1775636627434" duration="1233000" />
     </task>
     <task id="LOCAL-00001" summary="FIX changes">
       <option name="closed" value="true" />
@@ -383,7 +395,15 @@
       <option name="project" value="LOCAL" />
       <updated>1775636645230</updated>
     </task>
-    <option name="localTasksCounter" value="2" />
+    <task id="LOCAL-00002" summary="FIX changes">
+      <option name="closed" value="true" />
+      <created>1775636965552</created>
+      <option name="number" value="00002" />
+      <option name="presentableId" value="LOCAL-00002" />
+      <option name="project" value="LOCAL" />
+      <updated>1775636965552</updated>
+    </task>
+    <option name="localTasksCounter" value="3" />
     <servers />
   </component>
   <component name="TodoView" selected-index="0">

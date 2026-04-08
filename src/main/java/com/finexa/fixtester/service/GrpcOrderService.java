@@ -53,6 +53,7 @@ public class GrpcOrderService {
                     .setProduct(request.getProduct())
                     .setTenantCode(request.getTenantCode())
                     .setLoginId(request.getLoginId())
+                    .setOrgId(request.getOrgId())
                     .setClientIp(request.getClientIp())
                     .setSessionId(sessionId)
                     .setComponentId(request.getComponentId())

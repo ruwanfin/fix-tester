@@ -23,6 +23,7 @@ com\finexa\fixtester\config\KafkaConsumerConfig.class
 com\finexa\orderManage\core\grpc\OrderServiceGrpc$OrderServiceImplBase.class
 com\finexa\fixtester\consumer\listener\ExchangeConsumer.class
 com\finexa\fixtester\consumer\filter\ExchangeConsumerFilterStrategy.class
+com\finexa\fixtester\dto\FixDmaRequest.class
 com\finexa\orderManage\core\grpc\FineXaMsgHeaderGRPCOrBuilder.class
 com\finexa\orderManage\core\grpc\OrderRequestBodyGRPCOrBuilder.class
 com\finexa\orderManage\core\grpc\OrderServiceGrpc$OrderServiceStub.class

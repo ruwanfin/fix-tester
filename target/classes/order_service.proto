@@ -24,6 +24,7 @@ message FineXaMsgHeaderGRPC {
   string sessionId   = 5;
   string componentId = 6;
   string unqReqId    = 7;
+  int32 orgId        = 8;
 }
 
 // -------------------------

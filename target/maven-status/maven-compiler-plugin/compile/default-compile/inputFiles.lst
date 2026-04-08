@@ -14,6 +14,7 @@ E:\REPOS\FINE\OMS\nexaoms\FinexaFIXTester\target\generated-sources\protobuf\java
 E:\REPOS\FINE\OMS\nexaoms\FinexaFIXTester\target\generated-sources\protobuf\java\com\finexa\orderManage\core\grpc\OrderResponseGRPCOrBuilder.java
 E:\REPOS\FINE\OMS\nexaoms\FinexaFIXTester\src\main\java\com\finexa\fixtester\constant\KafkaHeaderKey.java
 E:\REPOS\FINE\OMS\nexaoms\FinexaFIXTester\src\main\java\com\finexa\fixtester\consumer\health\ConsumerHealthIndicator.java
+E:\REPOS\FINE\OMS\nexaoms\FinexaFIXTester\src\main\java\com\finexa\fixtester\dto\FixDmaRequest.java
 E:\REPOS\FINE\OMS\nexaoms\FinexaFIXTester\src\main\java\com\finexa\fixtester\dto\PlaceOrderResponse.java
 E:\REPOS\FINE\OMS\nexaoms\FinexaFIXTester\src\main\java\com\finexa\fixtester\dto\SendMessageResponse.java
 E:\REPOS\FINE\OMS\nexaoms\FinexaFIXTester\src\main\java\com\finexa\fixtester\service\FIXMessageService.java
