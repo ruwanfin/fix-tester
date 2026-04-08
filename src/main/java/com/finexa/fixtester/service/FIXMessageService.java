@@ -1,6 +1,7 @@
 package com.finexa.fixtester.service;
 
 import com.finexa.fixtester.dto.ExecutionReportRequest;
+import com.finexa.fixtester.dto.FixDmaRequest;
 import com.finexa.fixtester.dto.ScenarioRequest;
 import com.finexa.fixtester.dto.ScenarioResponse;
 import com.finexa.fixtester.dto.ScenarioStep;
@@ -13,6 +14,10 @@ import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.kafka.support.SendResult;
 import org.springframework.stereotype.Service;
 
+import org.apache.kafka.clients.producer.ProducerRecord;
+import org.apache.kafka.common.header.internals.RecordHeader;
+
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
@@ -21,7 +26,7 @@ import java.util.concurrent.TimeUnit;
 @Service
 @RequiredArgsConstructor
 @Slf4j
-public class FIXMessageService {
+public class FIXMessageService  {
 
     private final KafkaTemplate<String, String> kafkaTemplate;
 
@@ -33,7 +38,7 @@ public class FIXMessageService {
             String kafkaMessage = buildKafkaMessage(request);
             log.info("Sending FIX message to topic {}: {}", exchangeTopic, formatForLog(kafkaMessage));
 
-            CompletableFuture<SendResult<String, String>> future = kafkaTemplate.send(exchangeTopic, request.getClOrdId(), kafkaMessage);
+            CompletableFuture<SendResult<String, String>> future = kafkaTemplate.send(buildRecord(exchangeTopic, request.getClOrdId(), kafkaMessage));
             SendResult<String, String> result = future.get(10, TimeUnit.SECONDS);
 
             log.info("Message sent successfully. Topic: {}, Partition: {}, Offset: {}",
@@ -66,7 +71,7 @@ public class FIXMessageService {
         try {
             log.info("Sending raw message to topic {}: {}", exchangeTopic, formatForLog(rawMessage));
 
-            CompletableFuture<SendResult<String, String>> future = kafkaTemplate.send(exchangeTopic, rawMessage);
+            CompletableFuture<SendResult<String, String>> future = kafkaTemplate.send(buildRecord(exchangeTopic, null, rawMessage));
             SendResult<String, String> result = future.get(10, TimeUnit.SECONDS);
 
             log.info("Raw message sent successfully. Topic: {}, Partition: {}, Offset: {}",
@@ -258,6 +263,75 @@ public class FIXMessageService {
             );
             default -> throw new IllegalArgumentException("Unknown execution type: " + request.getExecType());
         };
+    }
+
+    public SendMessageResponse sendFixDmaOrder(FixDmaRequest request) {
+        try {
+            String kafkaMessage = buildDmaKafkaMessage(request);
+            String key = request.getClOrdId();
+            log.info("Sending FIXDMA ({}) to topic {}: {}", request.getMsgType(), exchangeTopic, formatForLog(kafkaMessage));
+
+            CompletableFuture<SendResult<String, String>> future = kafkaTemplate.send(buildRecord(exchangeTopic, key, kafkaMessage));
+            SendResult<String, String> result = future.get(10, TimeUnit.SECONDS);
+
+            log.info("FIXDMA message sent. Topic: {}, Partition: {}, Offset: {}",
+                    result.getRecordMetadata().topic(),
+                    result.getRecordMetadata().partition(),
+                    result.getRecordMetadata().offset());
+
+            return new SendMessageResponse(
+                    true,
+                    "FIXDMA message sent successfully",
+                    formatForLog(kafkaMessage),
+                    result.getRecordMetadata().topic(),
+                    result.getRecordMetadata().offset(),
+                    result.getRecordMetadata().partition()
+            );
+        } catch (Exception e) {
+            log.error("Failed to send FIXDMA message: {}", e.getMessage(), e);
+            return new SendMessageResponse(false, "Failed to send message: " + e.getMessage(),
+                    null, exchangeTopic, null, null);
+        }
+    }
+
+    private String buildDmaKafkaMessage(FixDmaRequest r) {
+        String session    = r.getSessionId()    != null && !r.getSessionId().isEmpty()    ? r.getSessionId()    : "BBG_SESSION";
+        String sender     = r.getSenderCompId() != null && !r.getSenderCompId().isEmpty() ? r.getSenderCompId() : "BBG";
+        String target     = r.getTargetCompId() != null && !r.getTargetCompId().isEmpty() ? r.getTargetCompId() : "FINEXA";
+        String subId      = r.getSenderSubId()  != null ? r.getSenderSubId()  : "null";
+        String exchange   = r.getExchange()     != null ? r.getExchange()     : "TDWL";
+        String tif        = r.getTif()          != null ? r.getTif()          : "0";
+        String ordType    = r.getOrdType()      != null ? r.getOrdType()      : "2";
+        String secIdSrc   = r.getSecurityIdSource() != null ? r.getSecurityIdSource() : "8";
+        String secId      = r.getSecurityId()   != null && !r.getSecurityId().isEmpty() ? r.getSecurityId() : r.getSymbol();
+        String handlInst  = r.getHandlInst()    != null ? r.getHandlInst()    : "1";
+
+        return switch (r.getMsgType().toUpperCase()) {
+            case "D" -> FIXMessageBuilder.createDmaNewOrder(
+                    session, r.getMsgSeqNum(), sender, target, subId,
+                    handlInst, r.getClOrdId(), r.getAccount(), r.getOrigClOrdId(),
+                    r.getSymbol(), secId, secIdSrc,
+                    r.getSide(), r.getPrice(), (int) r.getQuantity(),
+                    ordType, exchange, tif);
+            case "G" -> FIXMessageBuilder.createDmaAmend(
+                    session, r.getMsgSeqNum(), sender, target, subId,
+                    r.getClOrdId(), r.getAccount(), r.getSymbol(),
+                    r.getSide(), r.getOrigClOrdId(),
+                    r.getPrice(), (int) r.getMinQty(), (int) r.getQuantity(),
+                    ordType, exchange, tif);
+            case "F" -> FIXMessageBuilder.createDmaCancel(
+                    session, r.getMsgSeqNum(), sender, target, subId,
+                    r.getClOrdId(), r.getAccount(), r.getSymbol(),
+                    r.getSide(), (int) r.getQuantity(), r.getOrigClOrdId());
+            default -> throw new IllegalArgumentException("Unknown FIXDMA message type: " + r.getMsgType());
+        };
+    }
+
+    private ProducerRecord<String, String> buildRecord(String topic, String key, String value) {
+        ProducerRecord<String, String> record = new ProducerRecord<>(topic, key, value);
+        record.headers().add(new RecordHeader("tn", "DEFAULT_TENANT".getBytes(StandardCharsets.UTF_8)));
+        record.headers().add(new RecordHeader("et", "23041".getBytes(StandardCharsets.UTF_8)));
+        return record;
     }
 
     /**

@@ -1,6 +1,7 @@
 package com.finexa.fixtester.controller;
 
 import com.finexa.fixtester.dto.ExecutionReportRequest;
+import com.finexa.fixtester.dto.FixDmaRequest;
 import com.finexa.fixtester.dto.ScenarioRequest;
 import com.finexa.fixtester.dto.ScenarioResponse;
 import com.finexa.fixtester.dto.SendMessageResponse;
@@ -38,6 +39,13 @@ public class FIXClientController {
     public ResponseEntity<SendMessageResponse> sendRawMessage(@RequestBody String rawMessage) {
         log.info("Received raw message request");
         SendMessageResponse response = fixMessageService.sendRawMessage(rawMessage);
+        return ResponseEntity.ok(response);
+    }
+
+    @PostMapping("/fixdma")
+    public ResponseEntity<SendMessageResponse> sendFixDmaOrder(@RequestBody FixDmaRequest request) {
+        log.info("Received FIXDMA request: type={}, clOrdId={}", request.getMsgType(), request.getClOrdId());
+        SendMessageResponse response = fixMessageService.sendFixDmaOrder(request);
         return ResponseEntity.ok(response);
     }
 

@@ -60,6 +60,8 @@ public class FIXMessageBuilder {
     public static final int TAG_ORD_REJ_REASON = 103;
     public static final int TAG_HANDL_INST = 21;
     public static final int TAG_ORIG_CL_ORD_ID = 41;
+    public static final int TAG_SENDER_SUB_ID = 50;
+    public static final int TAG_MIN_QTY = 138;
 
     // Order Status values
     public static final char ORD_STATUS_NEW = '0';
@@ -131,6 +133,10 @@ public class FIXMessageBuilder {
         addField(TAG_BEGIN_STRING, "FIXT.1.1");
     }
 
+    public FIXMessageBuilder(String beginString) {
+        addField(TAG_BEGIN_STRING, beginString);
+    }
+
     public FIXMessageBuilder addField(int tag, String value) {
         if (value != null && !value.isEmpty()) {
             fields.put(tag, value);
@@ -199,8 +205,8 @@ public class FIXMessageBuilder {
      * Format: sessionID | sequenceNo | eventType | eventData
      */
     public static String wrapForKafka(String sessionId, String fixMessage, int eventType) {
-        int seqNo = sequenceCounter.getAndIncrement();
-        return sessionId + FS + seqNo + FS + eventType + FS + fixMessage;
+//        return sessionId + FS + seqNo + FS + eventType + FS + fixMessage;
+        return fixMessage;
     }
 
     /**
@@ -581,5 +587,124 @@ public class FIXMessageBuilder {
                                           double quantity, double price, String exchange, String sessionId) {
         return createPendingNew(clOrdId, orderId, symbol, side, quantity, price, exchange, sessionId,
                 null, 0, null, null, null);
+    }
+
+    // ── Bloomberg FIX DMA messages (FIX 4.2) ────────────────────────────
+
+    /**
+     * Creates a Bloomberg-style New Order Single (35=D) in FIX 4.2 format.
+     * Tags in order: 35,34,49,52,56,50,21,11,1,[41],22,55,48,54,60,44,38,40,207,59
+     */
+    public static String createDmaNewOrder(String sessionId, int msgSeqNum,
+                                           String senderCompId, String targetCompId, String senderSubId,
+                                           String handlInst, String clOrdId, String account, String origClOrdId,
+                                           String symbol, String securityId, String securityIdSource,
+                                           int side, double price, int quantity,
+                                           String ordType, String exchange, String tif) {
+        if (msgSeqNum <= 0) {
+            msgSeqNum = sequenceCounter.getAndIncrement();
+        }
+        String timestamp = LocalDateTime.now().format(FIX_TIMESTAMP_FORMAT);
+
+        FIXMessageBuilder builder = new FIXMessageBuilder("FIX.4.2")
+                .addField(TAG_MSG_TYPE, MSG_TYPE_NEW_ORDER)
+                .addField(TAG_MSG_SEQ_NUM, msgSeqNum)
+                .addField(TAG_SENDER_COMP_ID, senderCompId)
+                .addField(TAG_SENDING_TIME, timestamp)
+                .addField(TAG_TARGET_COMP_ID, targetCompId)
+                .addField(TAG_SENDER_SUB_ID, senderSubId != null ? senderSubId : "null")
+                .addField(TAG_HANDL_INST, handlInst != null ? handlInst : "1")
+                .addField(TAG_CL_ORD_ID, clOrdId);
+
+        if (account != null && !account.isEmpty()) {
+            builder.addField(TAG_ACCOUNT, account);
+        }
+        if (origClOrdId != null && !origClOrdId.isEmpty()) {
+            builder.addField(TAG_ORIG_CL_ORD_ID, origClOrdId);
+        }
+
+        builder.addField(TAG_SECURITY_ID_SOURCE, securityIdSource != null ? securityIdSource : "8")
+               .addField(TAG_SYMBOL, symbol)
+               .addField(TAG_SECURITY_ID, securityId != null ? securityId : symbol)
+               .addField(TAG_SIDE, String.valueOf(side))
+               .addField(TAG_TRANSACT_TIME, timestamp)
+               .addField(TAG_PRICE, price)
+               .addField(TAG_ORDER_QTY, quantity)
+               .addField(TAG_ORD_TYPE, ordType != null ? ordType : "2")
+               .addField(TAG_EXCHANGE, exchange)
+               .addField(TAG_TIME_IN_FORCE, tif != null ? tif : "0");
+
+        return wrapForKafka(sessionId, builder.build(), EVENT_TYPE_APPLICATION);
+    }
+
+    /**
+     * Creates a Bloomberg-style Order Cancel/Replace Request (35=G) in FIX 4.2 format.
+     * Tags in order: 35,34,49,52,56,50,11,1,55,54,41,60,44,138,38,40,207,59
+     */
+    public static String createDmaAmend(String sessionId, int msgSeqNum,
+                                        String senderCompId, String targetCompId, String senderSubId,
+                                        String clOrdId, String account, String symbol,
+                                        int side, String origClOrdId,
+                                        double price, int minQty, int quantity,
+                                        String ordType, String exchange, String tif) {
+        if (msgSeqNum <= 0) {
+            msgSeqNum = sequenceCounter.getAndIncrement();
+        }
+        String timestamp = LocalDateTime.now().format(FIX_TIMESTAMP_FORMAT);
+
+        String fixMsg = new FIXMessageBuilder("FIX.4.2")
+                .addField(TAG_MSG_TYPE, MSG_TYPE_REPLACE_REQUEST)
+                .addField(TAG_MSG_SEQ_NUM, msgSeqNum)
+                .addField(TAG_SENDER_COMP_ID, senderCompId)
+                .addField(TAG_SENDING_TIME, timestamp)
+                .addField(TAG_TARGET_COMP_ID, targetCompId)
+                .addField(TAG_SENDER_SUB_ID, senderSubId != null ? senderSubId : "null")
+                .addField(TAG_CL_ORD_ID, clOrdId)
+                .addField(TAG_ACCOUNT, account)
+                .addField(TAG_SYMBOL, symbol)
+                .addField(TAG_SIDE, String.valueOf(side))
+                .addField(TAG_ORIG_CL_ORD_ID, origClOrdId)
+                .addField(TAG_TRANSACT_TIME, timestamp)
+                .addField(TAG_PRICE, price)
+                .addField(TAG_MIN_QTY, minQty)
+                .addField(TAG_ORDER_QTY, quantity)
+                .addField(TAG_ORD_TYPE, ordType != null ? ordType : "2")
+                .addField(TAG_EXCHANGE, exchange)
+                .addField(TAG_TIME_IN_FORCE, tif != null ? tif : "0")
+                .build();
+
+        return wrapForKafka(sessionId, fixMsg, EVENT_TYPE_APPLICATION);
+    }
+
+    /**
+     * Creates a Bloomberg-style Order Cancel Request (35=F) in FIX 4.2 format.
+     * Tags in order: 35,34,49,52,56,50,11,1,55,54,38,41,60
+     */
+    public static String createDmaCancel(String sessionId, int msgSeqNum,
+                                         String senderCompId, String targetCompId, String senderSubId,
+                                         String clOrdId, String account, String symbol,
+                                         int side, int quantity, String origClOrdId) {
+        if (msgSeqNum <= 0) {
+            msgSeqNum = sequenceCounter.getAndIncrement();
+        }
+        String timestamp = LocalDateTime.now().format(FIX_TIMESTAMP_FORMAT);
+
+        String fixMsg = new FIXMessageBuilder("FIX.4.2")
+                .addField(TAG_MSG_TYPE, MSG_TYPE_CANCEL_REQUEST)
+                .addField(TAG_MSG_SEQ_NUM, msgSeqNum)
+                .addField(TAG_SENDER_COMP_ID, senderCompId)
+                .addField(TAG_SENDING_TIME, timestamp)
+                .addField(TAG_TARGET_COMP_ID, targetCompId)
+                .addField(TAG_SENDER_SUB_ID, senderSubId != null ? senderSubId : "null")
+                .addField(TAG_CL_ORD_ID, clOrdId)
+                .addField(TAG_ACCOUNT, account)
+                .addField(TAG_SYMBOL, symbol)
+                .addField(TAG_SIDE, String.valueOf(side))
+                .addField(TAG_ORDER_QTY, quantity)
+                .addField(TAG_ORIG_CL_ORD_ID, origClOrdId)
+                .addField(TAG_TRANSACT_TIME, timestamp)
+                .build();
+
+        return wrapForKafka(sessionId, fixMsg, EVENT_TYPE_APPLICATION);
     }
 }

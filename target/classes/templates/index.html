@@ -510,6 +510,7 @@
                 <button class="tab active" onclick="showTab('execution')">Execution Report</button>
                 <button class="tab" onclick="showTab('scenario')">Scenario / Lifecycle</button>
                 <button class="tab" onclick="showTab('placeorder')">Place Order (gRPC)</button>
+                <button class="tab" onclick="showTab('fixdma')">FIXDMA (Bloomberg)</button>
                 <button class="tab" onclick="showTab('raw')">Raw Message</button>
             </div>
 
@@ -1033,6 +1034,175 @@
                     <h4 style="color:#b0bec5;font-size:0.95rem;margin-bottom:10px;">gRPC Response</h4>
                     <div id="poResponseGrid" style="display:grid;grid-template-columns:1fr 1fr;gap:10px;font-size:0.85rem;">
                     </div>
+                </div>
+            </div>
+
+            <!-- FIXDMA (Bloomberg) Tab -->
+            <div id="fixdma-tab" class="tab-content">
+                <div class="info-box">
+                    <h4>FIXDMA Bloomberg-Style Orders</h4>
+                    <p>Simulate Bloomberg DMA order messages published to the <strong>from-exchange</strong> Kafka topic. OMS will receive and route to exchange.</p>
+                </div>
+
+                <!-- Quick Actions -->
+                <div class="quick-actions" style="grid-template-columns: repeat(3,1fr);">
+                    <button class="btn btn-success quick-btn" onclick="fillDmaSampleD()">Sample: New (D)</button>
+                    <button class="btn btn-warning quick-btn" onclick="fillDmaSampleG()">Sample: Amend (G)</button>
+                    <button class="btn btn-danger  quick-btn" onclick="fillDmaSampleF()">Sample: Cancel (F)</button>
+                </div>
+
+                <!-- Message Type -->
+                <div class="form-group" style="margin-bottom:15px;">
+                    <label for="dma_msgType">Message Type</label>
+                    <select id="dma_msgType" onchange="toggleDmaFields()">
+                        <option value="D">D – New Order Single</option>
+                        <option value="G">G – Order Cancel/Replace (Amend)</option>
+                        <option value="F">F – Order Cancel Request</option>
+                    </select>
+                </div>
+
+                <!-- FIX Header -->
+                <div class="info-box" style="margin-bottom:15px;">
+                    <h4>FIX Header (FIX 4.2)</h4>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="dma_sessionId">Session ID (Kafka)</label>
+                        <input type="text" id="dma_sessionId" value="BBG_SESSION">
+                    </div>
+                    <div class="form-group">
+                        <label for="dma_msgSeqNum">Msg Seq Num (34)</label>
+                        <input type="number" id="dma_msgSeqNum" value="78" step="1" min="1">
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="dma_senderCompId">Sender Comp ID (49)</label>
+                        <input type="text" id="dma_senderCompId" value="BBG">
+                    </div>
+                    <div class="form-group">
+                        <label for="dma_targetCompId">Target Comp ID (56)</label>
+                        <input type="text" id="dma_targetCompId" value="FINEXA">
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label for="dma_senderSubId">Sender Sub ID (50)</label>
+                    <input type="text" id="dma_senderSubId" value="null">
+                </div>
+
+                <!-- Order Fields -->
+                <div class="info-box" style="margin-bottom:15px;margin-top:20px;">
+                    <h4>Order Fields</h4>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="dma_clOrdId">Cl Ord ID (11) – new request ID</label>
+                        <input type="text" id="dma_clOrdId" value="266">
+                    </div>
+                    <div class="form-group">
+                        <label for="dma_origClOrdId">Orig Cl Ord ID (41)</label>
+                        <input type="text" id="dma_origClOrdId" placeholder="Required for G/F; optional for D">
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="dma_symbol">Symbol (55)</label>
+                        <input type="text" id="dma_symbol" value="1010">
+                    </div>
+                    <div class="form-group">
+                        <label for="dma_securityId">Security ID (48)</label>
+                        <input type="text" id="dma_securityId" value="1010">
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="dma_exchange">Exchange / ExDest (207)</label>
+                        <input type="text" id="dma_exchange" value="TDWL">
+                    </div>
+                    <div class="form-group">
+                        <label for="dma_securityIdSource">Sec ID Source (22)</label>
+                        <input type="text" id="dma_securityIdSource" value="8">
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="dma_side">Side (54)</label>
+                        <select id="dma_side">
+                            <option value="1">1 – Buy</option>
+                            <option value="2">2 – Sell</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="dma_ordType">Ord Type (40)</label>
+                        <select id="dma_ordType">
+                            <option value="1">1 – Market</option>
+                            <option value="2" selected>2 – Limit</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="dma_quantity">Order Qty (38)</label>
+                        <input type="number" id="dma_quantity" value="50" step="1" min="1">
+                    </div>
+                    <div class="form-group">
+                        <label for="dma_price">Price (44)</label>
+                        <input type="number" id="dma_price" value="10.03" step="0.01" min="0">
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="dma_tif">Time In Force (59)</label>
+                        <select id="dma_tif">
+                            <option value="0" selected>0 – Day</option>
+                            <option value="1">1 – GTC</option>
+                            <option value="3">3 – IOC</option>
+                            <option value="4">4 – FOK</option>
+                        </select>
+                    </div>
+                    <div class="form-group" id="dma_accountGroup">
+                        <label for="dma_account">Account (1)</label>
+                        <input type="text" id="dma_account" value="08012345678">
+                    </div>
+                </div>
+
+                <!-- D-only fields -->
+                <div id="dma_dFields">
+                    <div class="info-box" style="margin-bottom:15px;margin-top:20px;">
+                        <h4>New Order Specific (35=D)</h4>
+                    </div>
+                    <div class="form-group">
+                        <label for="dma_handlInst">Handl Inst (21)</label>
+                        <select id="dma_handlInst">
+                            <option value="1" selected>1 – Automated Execution, No Broker</option>
+                            <option value="2">2 – Automated Execution, Broker OK</option>
+                            <option value="3">3 – Manual Order</option>
+                        </select>
+                    </div>
+                </div>
+
+                <!-- G-only fields -->
+                <div id="dma_gFields" style="display:none;">
+                    <div class="info-box" style="margin-bottom:15px;margin-top:20px;">
+                        <h4>Amend Specific (35=G)</h4>
+                    </div>
+                    <div class="form-group">
+                        <label for="dma_minQty">Min Qty (138)</label>
+                        <input type="number" id="dma_minQty" value="0" step="1" min="0">
+                    </div>
+                </div>
+
+                <div class="button-group">
+                    <button class="btn btn-primary" onclick="sendFixDma()">
+                        <span>Send to OMS (from-exchange)</span>
+                    </button>
+                    <button class="btn btn-secondary" onclick="clearDmaForm()">Clear</button>
+                </div>
+
+                <!-- Response -->
+                <div id="dmaResponsePanel" style="margin-top:20px;display:none;">
+                    <h4 style="color:#b0bec5;font-size:0.95rem;margin-bottom:10px;">Response</h4>
+                    <div id="dmaResponseContent" class="response-content"></div>
                 </div>
             </div>
 
@@ -1720,6 +1890,170 @@
         document.getElementById('po_bypassRms').value     = '0';
         document.getElementById('poResponsePanel').style.display = 'none';
     }
+
+    // ── FIXDMA (Bloomberg) Tab ────────────────────────────────────────────
+
+    function toggleDmaFields() {
+        const type = document.getElementById('dma_msgType').value;
+        document.getElementById('dma_dFields').style.display = (type === 'D') ? 'block' : 'none';
+        document.getElementById('dma_gFields').style.display = (type === 'G') ? 'block' : 'none';
+        // Account (tag 1) is configurable for all message types
+        document.getElementById('dma_accountGroup').style.display = 'flex';
+    }
+
+    function fillDmaSampleD() {
+        document.getElementById('dma_msgType').value         = 'D';
+        document.getElementById('dma_sessionId').value       = 'BBG_SESSION';
+        document.getElementById('dma_msgSeqNum').value       = '78';
+        document.getElementById('dma_senderCompId').value    = 'BBG';
+        document.getElementById('dma_targetCompId').value    = 'FINEXA';
+        document.getElementById('dma_senderSubId').value     = 'null';
+        document.getElementById('dma_clOrdId').value         = '266';
+        document.getElementById('dma_account').value         = '08012345678';
+        document.getElementById('dma_origClOrdId').value     = '';
+        document.getElementById('dma_symbol').value          = '1010';
+        document.getElementById('dma_securityId').value      = '1010';
+        document.getElementById('dma_securityIdSource').value= '8';
+        document.getElementById('dma_side').value            = '1';
+        document.getElementById('dma_price').value           = '10.03';
+        document.getElementById('dma_quantity').value        = '50';
+        document.getElementById('dma_ordType').value         = '2';
+        document.getElementById('dma_exchange').value        = 'TDWL';
+        document.getElementById('dma_tif').value             = '0';
+        document.getElementById('dma_handlInst').value       = '1';
+        toggleDmaFields();
+    }
+
+    function fillDmaSampleG() {
+        document.getElementById('dma_msgType').value         = 'G';
+        document.getElementById('dma_sessionId').value       = 'BBG_SESSION';
+        document.getElementById('dma_msgSeqNum').value       = '79';
+        document.getElementById('dma_senderCompId').value    = 'BBG';
+        document.getElementById('dma_targetCompId').value    = 'FINEXA';
+        document.getElementById('dma_senderSubId').value     = 'null';
+        document.getElementById('dma_clOrdId').value         = '2666';
+        document.getElementById('dma_origClOrdId').value     = '2664';
+        document.getElementById('dma_account').value         = '08012345678';
+        document.getElementById('dma_symbol').value          = '1010';
+        document.getElementById('dma_securityId').value      = '1010';
+        document.getElementById('dma_securityIdSource').value= '8';
+        document.getElementById('dma_side').value            = '1';
+        document.getElementById('dma_price').value           = '30.01';
+        document.getElementById('dma_quantity').value        = '50';
+        document.getElementById('dma_ordType').value         = '2';
+        document.getElementById('dma_exchange').value        = 'TDWL';
+        document.getElementById('dma_tif').value             = '0';
+        document.getElementById('dma_minQty').value          = '0';
+        toggleDmaFields();
+    }
+
+    function fillDmaSampleF() {
+        document.getElementById('dma_msgType').value         = 'F';
+        document.getElementById('dma_sessionId').value       = 'BBG_SESSION';
+        document.getElementById('dma_msgSeqNum').value       = '80';
+        document.getElementById('dma_senderCompId').value    = 'BBG';
+        document.getElementById('dma_targetCompId').value    = 'FINEXA';
+        document.getElementById('dma_senderSubId').value     = 'null';
+        document.getElementById('dma_clOrdId').value         = '2656';
+        document.getElementById('dma_origClOrdId').value     = '2655';
+        document.getElementById('dma_account').value         = '1545225632';
+        document.getElementById('dma_symbol').value          = '1010';
+        document.getElementById('dma_securityId').value      = '1010';
+        document.getElementById('dma_securityIdSource').value= '8';
+        document.getElementById('dma_side').value            = '1';
+        document.getElementById('dma_quantity').value        = '50';
+        document.getElementById('dma_ordType').value         = '2';
+        document.getElementById('dma_exchange').value        = 'TDWL';
+        document.getElementById('dma_tif').value             = '0';
+        toggleDmaFields();
+    }
+
+    async function sendFixDma() {
+        showLoading(true);
+        document.getElementById('dmaResponsePanel').style.display = 'none';
+
+        const msgType = document.getElementById('dma_msgType').value;
+        const request = {
+            sessionId:         document.getElementById('dma_sessionId').value,
+            msgSeqNum:         parseInt(document.getElementById('dma_msgSeqNum').value) || 0,
+            senderCompId:      document.getElementById('dma_senderCompId').value,
+            targetCompId:      document.getElementById('dma_targetCompId').value,
+            senderSubId:       document.getElementById('dma_senderSubId').value,
+            msgType:           msgType,
+            clOrdId:           document.getElementById('dma_clOrdId').value,
+            origClOrdId:       document.getElementById('dma_origClOrdId').value,
+            account:           document.getElementById('dma_account').value,
+            symbol:            document.getElementById('dma_symbol').value,
+            securityId:        document.getElementById('dma_securityId').value,
+            securityIdSource:  document.getElementById('dma_securityIdSource').value,
+            side:              parseInt(document.getElementById('dma_side').value),
+            price:             parseFloat(document.getElementById('dma_price').value) || 0,
+            quantity:          parseFloat(document.getElementById('dma_quantity').value) || 0,
+            ordType:           document.getElementById('dma_ordType').value,
+            exchange:          document.getElementById('dma_exchange').value,
+            tif:               document.getElementById('dma_tif').value,
+            handlInst:         document.getElementById('dma_handlInst').value,
+            minQty:            parseFloat(document.getElementById('dma_minQty').value) || 0
+        };
+
+        try {
+            const response = await fetch('/api/fix/fixdma', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(request)
+            });
+
+            const result = await response.json();
+            const typeLabel = { D: 'New Order', G: 'Amend', F: 'Cancel' }[msgType] || msgType;
+            displayResponse(result, result.success);
+
+            const panel = document.getElementById('dmaResponsePanel');
+            const content = document.getElementById('dmaResponseContent');
+            content.className = 'response-content ' + (result.success ? 'success' : 'error');
+            content.textContent = JSON.stringify(result, null, 2);
+            panel.style.display = 'block';
+
+            addLogEntry(
+                `[FIXDMA/${typeLabel}] ${request.symbol} side=${request.side} qty=${request.quantity} px=${request.price} clOrdId=${request.clOrdId} → ${result.success ? 'OK' : 'FAILED'}`,
+                'sent'
+            );
+            updateConnectionStatus(result.success);
+        } catch (error) {
+            displayResponse({ error: error.message }, false);
+            addLogEntry(`FIXDMA error: ${error.message}`, 'sent');
+            updateConnectionStatus(false);
+        } finally {
+            showLoading(false);
+        }
+    }
+
+    function clearDmaForm() {
+        document.getElementById('dma_msgType').value          = 'D';
+        document.getElementById('dma_sessionId').value        = 'BBG_SESSION';
+        document.getElementById('dma_msgSeqNum').value        = '78';
+        document.getElementById('dma_senderCompId').value     = 'BBG';
+        document.getElementById('dma_targetCompId').value     = 'FINEXA';
+        document.getElementById('dma_senderSubId').value      = 'null';
+        document.getElementById('dma_clOrdId').value          = '';
+        document.getElementById('dma_origClOrdId').value      = '';
+        document.getElementById('dma_account').value          = '';
+        document.getElementById('dma_symbol').value           = '1010';
+        document.getElementById('dma_securityId').value       = '1010';
+        document.getElementById('dma_securityIdSource').value = '8';
+        document.getElementById('dma_side').value             = '1';
+        document.getElementById('dma_price').value            = '0';
+        document.getElementById('dma_quantity').value         = '0';
+        document.getElementById('dma_ordType').value          = '2';
+        document.getElementById('dma_exchange').value         = 'TDWL';
+        document.getElementById('dma_tif').value              = '0';
+        document.getElementById('dma_handlInst').value        = '1';
+        document.getElementById('dma_minQty').value           = '0';
+        document.getElementById('dmaResponsePanel').style.display = 'none';
+        toggleDmaFields();
+    }
+
+    // Initialise FIXDMA tab field visibility
+    toggleDmaFields();
 </script>
 </body>
 </html>
