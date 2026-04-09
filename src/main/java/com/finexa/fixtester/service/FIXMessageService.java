@@ -297,7 +297,7 @@ public class FIXMessageService  {
     private String buildDmaKafkaMessage(FixDmaRequest r) {
         String session    = r.getSessionId()    != null && !r.getSessionId().isEmpty()    ? r.getSessionId()    : "BBG_SESSION";
         String sender     = r.getSenderCompId() != null && !r.getSenderCompId().isEmpty() ? r.getSenderCompId() : "BBG";
-        String target     = r.getTargetCompId() != null && !r.getTargetCompId().isEmpty() ? r.getTargetCompId() : "FINEXA";
+        String target     = r.getTargetCompId() != null && !r.getTargetCompId().isEmpty() ? r.getTargetCompId() : "FINXAFC";
         String subId      = r.getSenderSubId()  != null ? r.getSenderSubId()  : "null";
         String exchange   = r.getExchange()     != null ? r.getExchange()     : "TDWL";
         String tif        = r.getTif()          != null ? r.getTif()          : "0";
