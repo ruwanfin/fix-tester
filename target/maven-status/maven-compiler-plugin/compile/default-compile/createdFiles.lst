@@ -1,5 +1,6 @@
 com\finexa\orderManage\core\grpc\OrderRequestGRPC$Builder.class
 com\finexa\fixtester\consumer\health\ConsumerHealthIndicator.class
+com\finexa\fixtester\dto\BulkOrderResult.class
 com\finexa\fixtester\dto\ExecutionReportRequest.class
 com\finexa\fixtester\dto\PlaceOrderRequest.class
 com\finexa\orderManage\core\grpc\FineXaMsgHeaderGRPC.class
@@ -21,8 +22,11 @@ com\finexa\orderManage\core\grpc\OrderResponseBodyGRPC$1.class
 com\finexa\fixtester\constant\RoutingTarget.class
 com\finexa\fixtester\config\KafkaConsumerConfig.class
 com\finexa\orderManage\core\grpc\OrderServiceGrpc$OrderServiceImplBase.class
+com\finexa\fixtester\dto\BulkOrderResponse.class
 com\finexa\fixtester\consumer\listener\ExchangeConsumer.class
 com\finexa\fixtester\consumer\filter\ExchangeConsumerFilterStrategy.class
+com\finexa\fixtester\service\CustomerFileService.class
+com\finexa\fixtester\dto\CustomerDataEntry.class
 com\finexa\fixtester\dto\FixDmaRequest.class
 com\finexa\orderManage\core\grpc\FineXaMsgHeaderGRPCOrBuilder.class
 com\finexa\orderManage\core\grpc\OrderRequestBodyGRPCOrBuilder.class
@@ -32,6 +36,7 @@ com\finexa\orderManage\core\grpc\OrderServiceGrpc$MethodHandlers.class
 com\finexa\fixtester\service\GrpcOrderService.class
 com\finexa\fixtester\util\KafkaHeaderUtil.class
 com\finexa\fixtester\constant\KafkaHeaderKey.class
+com\finexa\fixtester\dto\BulkOrderRequest.class
 com\finexa\orderManage\core\grpc\OrderRequestBodyGRPC.class
 com\finexa\orderManage\core\grpc\OrderResponseGRPC.class
 com\finexa\orderManage\core\grpc\OrderServiceGrpc$OrderServiceFileDescriptorSupplier.class

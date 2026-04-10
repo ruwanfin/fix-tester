@@ -52,6 +52,11 @@ app:
       group-id: ${KAFKA_EXCHANGE_CONSUMER_GROUP:exchange-consumer-group}
       concurrency: 3
 
+# Customer data file for bulk orders (supports classpath: and file: prefixes)
+customer:
+  data:
+    file: classpath:customerDetails.txt
+
 # Logging configuration
 logging:
   level:

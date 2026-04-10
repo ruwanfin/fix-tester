@@ -4,11 +4,26 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="1ce119d0-8ea9-4e23-909b-9e58a28b6171" name="Changes" comment="FIX changes 4">
+    <list default="true" id="1ce119d0-8ea9-4e23-909b-9e58a28b6171" name="Changes" comment="FIX changes 5">
+      <change afterPath="$PROJECT_DIR$/src/main/java/com/finexa/fixtester/dto/BulkOrderRequest.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/java/com/finexa/fixtester/dto/BulkOrderResponse.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/java/com/finexa/fixtester/dto/BulkOrderResult.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/java/com/finexa/fixtester/dto/CustomerDataEntry.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/java/com/finexa/fixtester/service/CustomerFileService.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/resources/customerDetails.txt" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/target/classes/customerDetails.txt" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/finexa-fix-tester.iws" beforeDir="false" afterPath="$PROJECT_DIR$/finexa-fix-tester.iws" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/com/finexa/fixtester/dto/PlaceOrderRequest.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/finexa/fixtester/dto/PlaceOrderRequest.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/finexa/fixtester/controller/GrpcOrderController.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/finexa/fixtester/controller/GrpcOrderController.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/resources/application.yml" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/resources/application.yml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main/resources/templates/index.html" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/resources/templates/index.html" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/target/classes/com/finexa/fixtester/service/FIXMessageService.class" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/com/finexa/fixtester/service/FIXMessageService.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/target/classes/application.yml" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/application.yml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/target/classes/com/finexa/fixtester/controller/GrpcOrderController.class" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/com/finexa/fixtester/controller/GrpcOrderController.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/target/classes/com/finexa/fixtester/dto/PlaceOrderRequest.class" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/com/finexa/fixtester/dto/PlaceOrderRequest.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/target/classes/templates/index.html" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/templates/index.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/target/finexa-fix-tester-1.0.0-SNAPSHOT.jar" beforeDir="false" afterPath="$PROJECT_DIR$/target/finexa-fix-tester-1.0.0-SNAPSHOT.jar" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/target/finexa-fix-tester-1.0.0-SNAPSHOT.jar.original" beforeDir="false" afterPath="$PROJECT_DIR$/target/finexa-fix-tester-1.0.0-SNAPSHOT.jar.original" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/target/maven-status/maven-compiler-plugin/compile/default-compile/createdFiles.lst" beforeDir="false" afterPath="$PROJECT_DIR$/target/maven-status/maven-compiler-plugin/compile/default-compile/createdFiles.lst" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/target/maven-status/maven-compiler-plugin/compile/default-compile/inputFiles.lst" beforeDir="false" afterPath="$PROJECT_DIR$/target/maven-status/maven-compiler-plugin/compile/default-compile/inputFiles.lst" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -382,7 +397,7 @@
       <workItem from="1774846012799" duration="11447000" />
       <workItem from="1775449655834" duration="4210000" />
       <workItem from="1775636627434" duration="7121000" />
-      <workItem from="1775797031897" duration="154000" />
+      <workItem from="1775797031897" duration="5634000" />
     </task>
     <task id="LOCAL-00001" summary="FIX changes">
       <option name="closed" value="true" />
@@ -424,7 +439,15 @@
       <option name="project" value="LOCAL" />
       <updated>1775754440076</updated>
     </task>
-    <option name="localTasksCounter" value="6" />
+    <task id="LOCAL-00006" summary="FIX changes 5">
+      <option name="closed" value="true" />
+      <created>1775797198344</created>
+      <option name="number" value="00006" />
+      <option name="presentableId" value="LOCAL-00006" />
+      <option name="project" value="LOCAL" />
+      <updated>1775797198344</updated>
+    </task>
+    <option name="localTasksCounter" value="7" />
     <servers />
   </component>
   <component name="TodoView" selected-index="0">
@@ -470,7 +493,8 @@
     <MESSAGE value="FIX changes 2" />
     <MESSAGE value="FIX changes 3" />
     <MESSAGE value="FIX changes 4" />
-    <option name="LAST_COMMIT_MESSAGE" value="FIX changes 4" />
+    <MESSAGE value="FIX changes 5" />
+    <option name="LAST_COMMIT_MESSAGE" value="FIX changes 5" />
   </component>
   <component name="VssConfiguration">
     <CheckoutOptions>
