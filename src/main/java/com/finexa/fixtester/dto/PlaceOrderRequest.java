@@ -38,6 +38,6 @@ public class PlaceOrderRequest {
     private int    ordCat           = 1;
     private int    bypassRms        = 0;
     private String remark           = "test";
-    private int    execBrokerID     = 1;
-    private int    custodianID      = 1;
+    private int    execBrokerID     = 74;
+    private int    custodianID      = 74;
 }
