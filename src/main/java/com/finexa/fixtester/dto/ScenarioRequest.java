@@ -8,7 +8,7 @@ import java.util.List;
 public class ScenarioRequest {
     private String sessionId = "SESSION001";
     private String senderCompId = "XSAU";
-    private String targetCompId = "FINXAMC";
+    private String targetCompId = "FINXAFC";
     private String account = "CSD10000";
     private String clOrdId;
     private String orderId;
