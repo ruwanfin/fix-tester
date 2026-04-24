@@ -472,6 +472,58 @@ public class FIXMessageBuilder {
     }
 
     /**
+     * Creates an Execution Report for a replaced/amended order (OrdStatus=5, ExecType=5).
+     */
+    public static String createReplaced(String clOrdId, String origClOrdId, String orderId, String symbol,
+                                        char side, double orderQty, double price, double cumQty,
+                                        double leavesQty, double avgPrice,
+                                        String exchange, String sessionId,
+                                        String account, int msgSeqNum, String execId,
+                                        String senderCompId, String targetCompId) {
+        if (execId == null || execId.isEmpty()) {
+            execId = generateExecId();
+        }
+        if (msgSeqNum <= 0) {
+            msgSeqNum = sequenceCounter.getAndIncrement();
+        }
+        if (senderCompId == null || senderCompId.isEmpty()) {
+            senderCompId = exchange;
+        }
+        if (targetCompId == null || targetCompId.isEmpty()) {
+            targetCompId = "OMS";
+        }
+
+        String timestamp = LocalDateTime.now().format(FIX_TIMESTAMP_FORMAT);
+
+        FIXMessageBuilder builder = new FIXMessageBuilder()
+                .addField(TAG_MSG_TYPE, MSG_TYPE_EXECUTION_REPORT)
+                .addField(TAG_MSG_SEQ_NUM, msgSeqNum)
+                .addField(TAG_SENDER_COMP_ID, senderCompId)
+                .addField(TAG_SENDING_TIME, timestamp)
+                .addField(TAG_TARGET_COMP_ID, targetCompId)
+                .addField(TAG_ACCOUNT, account)
+                .addField(TAG_AVG_PX, avgPrice)
+                .addField(TAG_CL_ORD_ID, clOrdId)
+                .addField(TAG_CUM_QTY, (int) cumQty)
+                .addField(TAG_EXEC_ID, execId)
+                .addField(TAG_LAST_PX, 0.0)
+                .addField(TAG_LAST_QTY, 0)
+                .addField(TAG_ORDER_ID, orderId)
+                .addField(TAG_ORDER_QTY, (int) orderQty)
+                .addField(TAG_ORD_STATUS, ORD_STATUS_REPLACED)
+                .addField(TAG_ORD_TYPE, ORD_TYPE_LIMIT)
+                .addField(TAG_ORIG_CL_ORD_ID, origClOrdId)
+                .addField(TAG_PRICE, price)
+                .addField(TAG_SIDE, side)
+                .addField(TAG_SYMBOL, symbol)
+                .addField(TAG_TRANSACT_TIME, timestamp)
+                .addField(TAG_EXEC_TYPE, EXEC_TYPE_REPLACED)
+                .addField(TAG_LEAVES_QTY, (int) leavesQty);
+
+        return wrapForKafka(sessionId, builder.build(), EVENT_TYPE_APPLICATION);
+    }
+
+    /**
      * Creates an Execution Report for a canceled order (OrdStatus=4, ExecType=4).
      */
     public static String createCanceled(String clOrdId, String origClOrdId, String orderId, String symbol,

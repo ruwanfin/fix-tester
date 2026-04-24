@@ -104,17 +104,19 @@ public class FIXMessageService  {
         List<ScenarioResponse.StepResult> stepResults = new ArrayList<>();
         boolean allSuccess = true;
         int autoSeqNum = 1;
+        String lastClOrdId = request.getClOrdId();
 
         for (int i = 0; i < request.getSteps().size(); i++) {
             ScenarioStep step = request.getSteps().get(i);
+            String effectiveClOrdId = step.getClOrdId() != null && !step.getClOrdId().isEmpty()
+                    ? step.getClOrdId() : lastClOrdId;
 
             ExecutionReportRequest execRequest = new ExecutionReportRequest();
             execRequest.setSessionId(request.getSessionId());
             execRequest.setSenderCompId(request.getSenderCompId());
             execRequest.setTargetCompId(request.getTargetCompId());
             execRequest.setAccount(request.getAccount());
-            execRequest.setClOrdId(step.getClOrdId() != null && !step.getClOrdId().isEmpty()
-                    ? step.getClOrdId() : request.getClOrdId());
+            execRequest.setClOrdId(effectiveClOrdId);
             execRequest.setOrderId(step.getOrderId() != null && !step.getOrderId().isEmpty()
                     ? step.getOrderId() : request.getOrderId());
             execRequest.setSymbol(request.getSymbol());
@@ -129,10 +131,17 @@ public class FIXMessageService  {
             execRequest.setCumQty(step.getCumQty());
             execRequest.setLeavesQty(step.getLeavesQty());
             execRequest.setAvgPrice(step.getAvgPrice());
+            execRequest.setOrigClOrdId(step.getOrigClOrdId() != null && !step.getOrigClOrdId().isEmpty()
+                    ? step.getOrigClOrdId()
+                    : ("REPLACED".equalsIgnoreCase(step.getExecType()) || "CANCELED".equalsIgnoreCase(step.getExecType())
+                        ? lastClOrdId : null));
             execRequest.setExecId(step.getExecId());
             execRequest.setMsgSeqNum(step.getMsgSeqNum() > 0 ? step.getMsgSeqNum() : autoSeqNum++);
 
             SendMessageResponse response = sendExecutionReport(execRequest);
+            if (effectiveClOrdId != null && !effectiveClOrdId.isEmpty()) {
+                lastClOrdId = effectiveClOrdId;
+            }
 
             stepResults.add(new ScenarioResponse.StepResult(
                     i + 1,
@@ -220,6 +229,25 @@ public class FIXMessageService  {
                     request.getCumQty()  > 0 ? request.getCumQty()  : request.getQuantity(),       // Tag 14 - cumulative qty
                     request.getFillPrice() > 0 ? request.getFillPrice() : request.getPrice(),      // Tag 31 - last px
                     request.getAvgPrice() > 0 ? request.getAvgPrice() : request.getPrice(),        // Tag 6  - avg px
+                    request.getExchange(),
+                    request.getSessionId(),
+                    request.getAccount(),
+                    request.getMsgSeqNum(),
+                    request.getExecId(),
+                    request.getSenderCompId(),
+                    request.getTargetCompId()
+            );
+            case "REPLACED" -> FIXMessageBuilder.createReplaced(
+                    request.getClOrdId(),
+                    request.getOrigClOrdId() != null ? request.getOrigClOrdId() : request.getClOrdId(),
+                    request.getOrderId(),
+                    request.getSymbol(),
+                    side,
+                    request.getQuantity(),
+                    request.getPrice(),
+                    request.getCumQty(),
+                    request.getLeavesQty() > 0 ? request.getLeavesQty() : request.getQuantity(),
+                    request.getAvgPrice(),
                     request.getExchange(),
                     request.getSessionId(),
                     request.getAccount(),

@@ -4,10 +4,17 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="1ce119d0-8ea9-4e23-909b-9e58a28b6171" name="Changes" comment="FIX changes 6">
+    <list default="true" id="1ce119d0-8ea9-4e23-909b-9e58a28b6171" name="Changes" comment="FIX changes 7">
       <change beforePath="$PROJECT_DIR$/finexa-fix-tester.iws" beforeDir="false" afterPath="$PROJECT_DIR$/finexa-fix-tester.iws" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/finexa/fixtester/dto/ExecutionReportRequest.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/finexa/fixtester/dto/ExecutionReportRequest.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main/java/com/finexa/fixtester/dto/ScenarioRequest.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/finexa/fixtester/dto/ScenarioRequest.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/finexa/fixtester/dto/ScenarioStep.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/finexa/fixtester/dto/ScenarioStep.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/finexa/fixtester/service/FIXMessageService.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/finexa/fixtester/service/FIXMessageService.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/finexa/fixtester/util/FIXMessageBuilder.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/finexa/fixtester/util/FIXMessageBuilder.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main/resources/templates/index.html" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/resources/templates/index.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/target/classes/com/finexa/fixtester/dto/ScenarioRequest.class" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/com/finexa/fixtester/dto/ScenarioRequest.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/target/classes/order_service.proto" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/target/classes/templates/index.html" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/templates/index.html" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -382,7 +389,11 @@
       <workItem from="1775449655834" duration="4210000" />
       <workItem from="1775636627434" duration="7121000" />
       <workItem from="1775797031897" duration="5634000" />
-      <workItem from="1775820846850" duration="471000" />
+      <workItem from="1775820846850" duration="1685000" />
+      <workItem from="1776311681826" duration="1676000" />
+      <workItem from="1776388006937" duration="593000" />
+      <workItem from="1776399789679" duration="5144000" />
+      <workItem from="1776663607782" duration="5674000" />
     </task>
     <task id="LOCAL-00001" summary="FIX changes">
       <option name="closed" value="true" />
@@ -440,7 +451,15 @@
       <option name="project" value="LOCAL" />
       <updated>1775820891523</updated>
     </task>
-    <option name="localTasksCounter" value="8" />
+    <task id="LOCAL-00008" summary="FIX changes 7">
+      <option name="closed" value="true" />
+      <created>1775821335459</created>
+      <option name="number" value="00008" />
+      <option name="presentableId" value="LOCAL-00008" />
+      <option name="project" value="LOCAL" />
+      <updated>1775821335459</updated>
+    </task>
+    <option name="localTasksCounter" value="9" />
     <servers />
   </component>
   <component name="TodoView" selected-index="0">
@@ -488,7 +507,8 @@
     <MESSAGE value="FIX changes 4" />
     <MESSAGE value="FIX changes 5" />
     <MESSAGE value="FIX changes 6" />
-    <option name="LAST_COMMIT_MESSAGE" value="FIX changes 6" />
+    <MESSAGE value="FIX changes 7" />
+    <option name="LAST_COMMIT_MESSAGE" value="FIX changes 7" />
   </component>
   <component name="VssConfiguration">
     <CheckoutOptions>

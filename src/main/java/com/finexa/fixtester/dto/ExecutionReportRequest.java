@@ -16,7 +16,7 @@ public class ExecutionReportRequest {
     private String clOrdId;          // Tag 11 - Client Order ID
     private String orderId;          // Tag 37 - Exchange Order ID
     private String execId;           // Tag 17 - Execution ID
-    private String account;          // Tag 1  - Account (e.g., CSD10000)
+    private String account;          // Tag 1  - Account (e.g., 08012345678)
 
     // Instrument fields
     private String symbol;           // Tag 55 - Symbol
@@ -29,7 +29,7 @@ public class ExecutionReportRequest {
     private String ordType = "2";    // Tag 40 - Order Type: 1=Market, 2=Limit
 
     // Execution fields
-    private String execType;         // Tag 150 - Exec Type: NEW, PARTIAL_FILL, FILL, CANCELED, REJECTED, PENDING_NEW
+    private String execType;         // Tag 150 - Exec Type: NEW, PARTIAL_FILL, FILL, REPLACED, CANCELED, REJECTED, PENDING_NEW
     private double fillQty;          // Tag 32 - Last Quantity (fill qty)
     private double fillPrice;        // Tag 31 - Last Price (fill price)
     private double cumQty;           // Tag 14 - Cumulative Quantity

@@ -527,6 +527,7 @@
                     <button class="btn btn-success quick-btn" onclick="fillNewOrder()">New</button>
                     <button class="btn btn-warning quick-btn" onclick="fillPartialFill()">Partial Fill</button>
                     <button class="btn btn-primary quick-btn" onclick="fillCompleteFill()">Complete Fill</button>
+                    <button class="btn btn-warning quick-btn" onclick="fillReplaced()">Replaced</button>
                     <button class="btn btn-secondary quick-btn" onclick="fillCanceled()">Canceled</button>
                     <button class="btn btn-danger quick-btn" onclick="fillRejected()">Rejected</button>
                 </div>
@@ -554,7 +555,7 @@
                         </div>
                         <div class="form-group">
                             <label for="targetCompId">Target Comp ID (56)</label>
-                            <input type="text" id="targetCompId" value="FINXAMC" placeholder="e.g., FINXAMC, OMS">
+                            <input type="text" id="targetCompId" value="FINXAFC" placeholder="e.g., FINXAFC, OMS">
                         </div>
                     </div>
 
@@ -565,7 +566,7 @@
                     <div class="form-row">
                         <div class="form-group">
                             <label for="account">Account (1)</label>
-                            <input type="text" id="account" value="CSD10000" placeholder="e.g., CSD10000">
+                            <input type="text" id="account" value="08012345678" placeholder="e.g., 08012345678">
                         </div>
                         <div class="form-group">
                             <label for="execId">Exec ID (17)</label>
@@ -640,6 +641,7 @@
                             <option value="NEW">0 - New</option>
                             <option value="PARTIAL_FILL">1 - Partial Fill</option>
                             <option value="FILL">2 - Fill (Complete)</option>
+                            <option value="REPLACED">5 - Replaced (Amend)</option>
                             <option value="CANCELED">4 - Canceled</option>
                             <option value="REJECTED">8 - Rejected</option>
                         </select>
@@ -676,10 +678,10 @@
                         </div>
                     </div>
 
-                    <!-- Conditional fields for cancel -->
+                    <!-- Conditional fields for cancel/replace -->
                     <div id="cancelFields" style="display: none;">
                         <div class="info-box" style="margin-bottom: 15px; margin-top: 10px;">
-                            <h4>Cancel Details (Tag 41)</h4>
+                            <h4>Cancel / Replace Details (Tag 41)</h4>
                         </div>
                         <div class="form-group">
                             <label for="origClOrdId">Orig Cl Ord ID (41)</label>
@@ -736,11 +738,11 @@
                 <div class="form-row">
                     <div class="form-group">
                         <label for="sc_targetCompId">Target Comp ID (56)</label>
-                        <input type="text" id="sc_targetCompId" value="FINXAMC">
+                        <input type="text" id="sc_targetCompId" value="FINXAFC">
                     </div>
                     <div class="form-group">
                         <label for="sc_account">Account (1)</label>
-                        <input type="text" id="sc_account" value="CSD10000">
+                        <input type="text" id="sc_account" value="08012345678">
                     </div>
                 </div>
                 <div class="form-row">
@@ -816,6 +818,7 @@
                                 <th class="col-num">Seq Num (34)</th>
                                 <th class="col-id">Order ID (37)</th>
                                 <th class="col-id">Cl Ord ID (11)</th>
+                                <th class="col-id">Orig Cl Ord ID (41)</th>
                                 <th class="col-act"></th>
                             </tr>
                             </thead>
@@ -1487,7 +1490,7 @@
 
         if (execType === 'PARTIAL_FILL' || execType === 'FILL') {
             fillFields.style.display = 'block';
-        } else if (execType === 'CANCELED') {
+        } else if (execType === 'CANCELED' || execType === 'REPLACED') {
             cancelFields.style.display = 'block';
         } else if (execType === 'REJECTED') {
             rejectFields.style.display = 'block';
@@ -1520,8 +1523,8 @@
     function setCommonFields() {
         // Set common header fields
         document.getElementById('senderCompId').value = 'XSAU';
-        document.getElementById('targetCompId').value = 'FINXAMC';
-        document.getElementById('account').value = 'CSD10000';
+        document.getElementById('targetCompId').value = 'FINXAFC';
+        document.getElementById('account').value = '08012345678';
         document.getElementById('exchange').value = 'XSAU';
         document.getElementById('symbol').value = '1010';
         document.getElementById('ordType').value = '2';
@@ -1605,6 +1608,26 @@
         toggleExecFields();
     }
 
+    function fillReplaced() {
+        setCommonFields();
+        document.getElementById('senderCompId').value = 'XSAU';
+        document.getElementById('targetCompId').value = '081';
+        document.getElementById('account').value = '8100000044';
+        document.getElementById('symbol').value = '4007';
+        document.getElementById('clOrdId').value = '157636';
+        document.getElementById('orderId').value = '20211108177528';
+        document.getElementById('execId').value = '477058';
+        document.getElementById('side').value = 'BUY';
+        document.getElementById('quantity').value = '263';
+        document.getElementById('price').value = '42.55';
+        document.getElementById('execType').value = 'REPLACED';
+        document.getElementById('origClOrdId').value = '157631';
+        document.getElementById('cumQty').value = '0';
+        document.getElementById('leavesQty').value = '263';
+        document.getElementById('avgPrice').value = '0';
+        toggleExecFields();
+    }
+
     function fillRejected() {
         setCommonFields();
         const ordId = generateOrderId();
@@ -1625,8 +1648,8 @@
         // Reset to default values
         document.getElementById('sessionId').value = 'SESSION001';
         document.getElementById('senderCompId').value = 'XSAU';
-        document.getElementById('targetCompId').value = 'FINXAMC';
-        document.getElementById('account').value = 'CSD10000';
+        document.getElementById('targetCompId').value = 'FINXAFC';
+        document.getElementById('account').value = '08012345678';
         document.getElementById('exchange').value = 'XSAU';
         document.getElementById('symbol').value = '20';
         document.getElementById('quantity').value = '30';
@@ -1807,6 +1830,7 @@
             ['NEW',          '0 - New'],
             ['PARTIAL_FILL', '1 - Partial Fill'],
             ['FILL',         '2 - Fill'],
+            ['REPLACED',     '5 - Replaced'],
             ['CANCELED',     '4 - Canceled'],
             ['REJECTED',     '8 - Rejected']
         ];
@@ -1834,6 +1858,7 @@
                 <td class="col-num"><input type="number" id="st_seqNum_${id}"    value="${s.msgSeqNum ?? 0}"    step="1"    min="0" placeholder="auto"></td>
                 <td class="col-id"><input  type="text"   id="st_orderId_${id}"   value="${s.orderId   ?? ''}"   placeholder="use base"></td>
                 <td class="col-id"><input  type="text"   id="st_clOrdId_${id}"   value="${s.clOrdId   ?? ''}"   placeholder="use base"></td>
+                <td class="col-id"><input  type="text"   id="st_origClOrdId_${id}" value="${s.origClOrdId ?? ''}" placeholder="required for amend/cancel"></td>
                 <td class="col-act"><button class="btn-remove" onclick="removeStep('step-row-${id}')">✕</button></td>
             `;
         tbody.appendChild(tr);
@@ -1885,7 +1910,8 @@
                 execId:     document.getElementById(`st_execId_${id}`).value    || '',
                 msgSeqNum:  parseInt(document.getElementById(`st_seqNum_${id}`).value)  || 0,
                 orderId:    document.getElementById(`st_orderId_${id}`).value  || '',
-                clOrdId:    document.getElementById(`st_clOrdId_${id}`).value  || ''
+                clOrdId:    document.getElementById(`st_clOrdId_${id}`).value  || '',
+                origClOrdId: document.getElementById(`st_origClOrdId_${id}`).value || ''
             };
         });
     }
