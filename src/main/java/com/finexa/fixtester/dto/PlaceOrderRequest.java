@@ -7,7 +7,8 @@ public class PlaceOrderRequest {
 
     // ── Connection ────────────────────────────────────────────
     private String grpcHost = "localhost";
-    private int    grpcPort = 9095;
+    private int    grpcPort = 8085;
+    private String websocketPath = "/oms-streaming-api";
 
     // ── Message Header (FineXaMsgHeaderGRPC) ─────────────────
     private int    product     = 1;

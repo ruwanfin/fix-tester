@@ -27,9 +27,9 @@ public class GrpcOrderController {
 
     @PostMapping("/place-order")
     public ResponseEntity<PlaceOrderResponse> placeOrder(@RequestBody PlaceOrderRequest request) {
-        log.info("Received place-order request: symbol={}, side={}, qty={}, price={}, target={}:{}",
+        log.info("Received place-order request: symbol={}, side={}, qty={}, price={}, wsTarget={}:{}{}",
                 request.getSymbol(), request.getSide(), request.getQuantity(),
-                request.getPrice(), request.getGrpcHost(), request.getGrpcPort());
+                request.getPrice(), request.getGrpcHost(), request.getGrpcPort(), request.getWebsocketPath());
         return ResponseEntity.ok(grpcOrderService.placeOrder(request));
     }
 
@@ -75,6 +75,7 @@ public class GrpcOrderController {
         PlaceOrderRequest r = new PlaceOrderRequest();
         r.setGrpcHost(t.getGrpcHost());
         r.setGrpcPort(t.getGrpcPort());
+        r.setWebsocketPath(t.getWebsocketPath());
         r.setProduct(t.getProduct());
         r.setTenantCode(t.getTenantCode());
         r.setLoginId(t.getLoginId());

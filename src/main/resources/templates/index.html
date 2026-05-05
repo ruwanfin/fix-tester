@@ -509,8 +509,8 @@
             <div class="tabs">
                 <button class="tab active" onclick="showTab('execution')">Execution Report</button>
                 <button class="tab" onclick="showTab('scenario')">Scenario / Lifecycle</button>
-                <button class="tab" onclick="showTab('placeorder')">Place Order (gRPC)</button>
-                <button class="tab" onclick="showTab('bulkorder')">Bulk Orders (gRPC)</button>
+                <button class="tab" onclick="showTab('placeorder')">Place Order (WebSocket)</button>
+                <button class="tab" onclick="showTab('bulkorder')">Bulk Orders (WebSocket)</button>
                 <button class="tab" onclick="showTab('fixdma')">FIXDMA (Bloomberg)</button>
                 <button class="tab" onclick="showTab('raw')">Raw Message</button>
             </div>
@@ -852,16 +852,16 @@
                 </div>
             </div>
 
-            <!-- Place Order (gRPC) Tab -->
+            <!-- Place Order (WebSocket) Tab -->
             <div id="placeorder-tab" class="tab-content">
                 <div class="info-box">
-                    <h4>Place Order via gRPC</h4>
-                    <p>Send a <strong>ProcessOrder</strong> request directly to the OMS gRPC service. Mirrors the <em>OrderGrpcClientTesterLocal</em> functionality.</p>
+                    <h4>Place Order via WebSocket</h4>
+                    <p>Send an order request directly to the OMS Netty WebSocket service.</p>
                 </div>
 
                 <!-- Connection -->
                 <div class="info-box" style="margin-bottom:15px;">
-                    <h4>gRPC Connection</h4>
+                    <h4>WebSocket Connection</h4>
                 </div>
                 <div class="form-row">
                     <div class="form-group">
@@ -870,13 +870,19 @@
                     </div>
                     <div class="form-group">
                         <label for="po_port">Port</label>
-                        <input type="number" id="po_port" value="9095" step="1" min="1" max="65535">
+                        <input type="number" id="po_port" value="8085" step="1" min="1" max="65535">
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="po_wsPath">Path</label>
+                        <input type="text" id="po_wsPath" value="/oms-streaming-api">
                     </div>
                 </div>
 
                 <!-- Header -->
                 <div class="info-box" style="margin-bottom:15px;margin-top:20px;">
-                    <h4>Message Header (FineXaMsgHeaderGRPC)</h4>
+                    <h4>Message Header</h4>
                 </div>
                 <div class="form-row">
                     <div class="form-group">
@@ -921,7 +927,7 @@
 
                 <!-- Order Body -->
                 <div class="info-box" style="margin-bottom:15px;margin-top:20px;">
-                    <h4>Order Body (OrderRequestBodyGRPC)</h4>
+                    <h4>Order Body</h4>
                 </div>
                 <div class="form-row">
                     <div class="form-group">
@@ -1033,18 +1039,18 @@
                     </button>
                 </div>
 
-                <!-- gRPC Response -->
+                <!-- WebSocket Response -->
                 <div id="poResponsePanel" style="margin-top:20px;display:none;">
-                    <h4 style="color:#b0bec5;font-size:0.95rem;margin-bottom:10px;">gRPC Response</h4>
+                    <h4 style="color:#b0bec5;font-size:0.95rem;margin-bottom:10px;">WebSocket Response</h4>
                     <div id="poResponseGrid" style="display:grid;grid-template-columns:1fr 1fr;gap:10px;font-size:0.85rem;">
                     </div>
                 </div>
             </div>
 
-            <!-- Bulk Orders (gRPC) Tab -->
+            <!-- Bulk Orders (WebSocket) Tab -->
             <div id="bulkorder-tab" class="tab-content">
                 <div class="info-box">
-                    <h4>Bulk Orders via gRPC</h4>
+                    <h4>Bulk Orders via WebSocket</h4>
                     <p>Send concurrent orders using customer records from <strong>customerDetails.txt</strong>. The first N records override <em>tradingAccountID</em>, <em>customerNo</em>, and <em>symbol</em> on each order.</p>
                 </div>
 
@@ -1056,7 +1062,7 @@
 
                 <!-- Connection -->
                 <div class="info-box" style="margin-bottom:15px;margin-top:10px;">
-                    <h4>gRPC Connection</h4>
+                    <h4>WebSocket Connection</h4>
                 </div>
                 <div class="form-row">
                     <div class="form-group">
@@ -1065,7 +1071,13 @@
                     </div>
                     <div class="form-group">
                         <label for="bo_port">Port</label>
-                        <input type="number" id="bo_port" value="9095" step="1" min="1" max="65535">
+                        <input type="number" id="bo_port" value="8085" step="1" min="1" max="65535">
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="bo_wsPath">Path</label>
+                        <input type="text" id="bo_wsPath" value="/oms-streaming-api">
                     </div>
                 </div>
 
@@ -1989,7 +2001,7 @@
     // Initialise scenario tab with defaults on page load
     resetScenarioDefaults();
 
-    // ── Place Order (gRPC) Tab ───────────────────────────────────────────
+    // Place Order (WebSocket) Tab
 
     // Default trade date to today
     (function() {
@@ -2003,7 +2015,8 @@
 
         const request = {
             grpcHost:        document.getElementById('po_host').value,
-            grpcPort:        parseInt(document.getElementById('po_port').value) || 9095,
+            grpcPort:        parseInt(document.getElementById('po_port').value) || 8085,
+            websocketPath:   document.getElementById('po_wsPath').value || '/oms-streaming-api',
             // Header
             product:         parseInt(document.getElementById('po_product').value)     || 1,
             tenantCode:      document.getElementById('po_tenantCode').value,
@@ -2044,13 +2057,13 @@
             displayResponse(result, result.success);
             renderPoResponse(result);
             addLogEntry(
-                `[gRPC] ${request.symbol} ${request.side === 1 ? 'BUY' : 'SELL'} ${request.quantity}@${request.price} → ${result.success ? result.statusDescription || 'OK' : 'FAILED'}`,
+                `[WS] ${request.symbol} ${request.side === 1 ? 'BUY' : 'SELL'} ${request.quantity}@${request.price} → ${result.success ? result.statusDescription || 'OK' : 'FAILED'}`,
                 'sent'
             );
             updateConnectionStatus(true);
         } catch (error) {
             displayResponse({ error: error.message }, false);
-            addLogEntry(`gRPC error: ${error.message}`, 'sent');
+            addLogEntry(`WebSocket error: ${error.message}`, 'sent');
             updateConnectionStatus(false);
         } finally {
             showLoading(false);
@@ -2085,7 +2098,8 @@
     function clearPlaceOrderForm() {
         const today = new Date().toISOString().split('T')[0];
         document.getElementById('po_host').value          = 'localhost';
-        document.getElementById('po_port').value          = '9095';
+        document.getElementById('po_port').value          = '8085';
+        document.getElementById('po_wsPath').value        = '/oms-streaming-api';
         document.getElementById('po_product').value       = '1';
         document.getElementById('po_tenantCode').value    = 'DEFAULT_TENANT';
         document.getElementById('po_loginId').value       = '6';
@@ -2278,7 +2292,7 @@
     // Initialise FIXDMA tab field visibility
     toggleDmaFields();
 
-    // ── Bulk Orders (gRPC) Tab ───────────────────────────────────────────
+    // Bulk Orders (WebSocket) Tab
 
     (function() {
         const today = new Date().toISOString().split('T')[0];
@@ -2294,7 +2308,8 @@
             orderCount,
             template: {
                 grpcHost:         document.getElementById('bo_host').value,
-                grpcPort:         parseInt(document.getElementById('bo_port').value)        || 9095,
+                grpcPort:         parseInt(document.getElementById('bo_port').value)        || 8085,
+                websocketPath:    document.getElementById('bo_wsPath').value || '/oms-streaming-api',
                 product:          parseInt(document.getElementById('bo_product').value)     || 1,
                 tenantCode:       document.getElementById('bo_tenantCode').value,
                 loginId:          parseInt(document.getElementById('bo_loginId').value)     || 0,
@@ -2370,7 +2385,8 @@
         const today = new Date().toISOString().split('T')[0];
         document.getElementById('bo_orderCount').value    = '10';
         document.getElementById('bo_host').value          = 'localhost';
-        document.getElementById('bo_port').value          = '9095';
+        document.getElementById('bo_port').value          = '8085';
+        document.getElementById('bo_wsPath').value        = '/oms-streaming-api';
         document.getElementById('bo_product').value       = '1';
         document.getElementById('bo_tenantCode').value    = 'DEFAULT_TENANT';
         document.getElementById('bo_loginId').value       = '6';
