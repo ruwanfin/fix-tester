@@ -37,6 +37,20 @@ public class GrpcOrderService {
                 + resolvePort(request.getGrpcPort()) + resolvePath(request.getWebsocketPath()));
 
         try {
+            if (requiresExistingClOrdId(request.getServiceType()) && !notBlank(request.getClOrdId())) {
+                return new PlaceOrderResponse(
+                        false,
+                        serviceName(request.getServiceType()) + " requires Cl Ord ID",
+                        0,
+                        0,
+                        null,
+                        null,
+                        0,
+                        "Cl Ord ID is required for amend/cancel",
+                        null,
+                        0L);
+            }
+
             String unqReqId = notBlank(request.getUnqReqId())
                     ? request.getUnqReqId()
                     : "REQ-" + System.currentTimeMillis();
@@ -55,8 +69,9 @@ public class GrpcOrderService {
 
             String wsRequest = buildWebSocketRequestJson(request, unqReqId, sessionId, clOrdId, tradeDate);
 
-            log.info("Sending WebSocket order to {}: unqReqId={}, symbol={}, side={}, qty={}, price={}",
-                    target, unqReqId, request.getSymbol(), request.getSide(),
+            log.info("Sending WebSocket {} to {}: serviceType={}, unqReqId={}, clOrdId={}, symbol={}, side={}, qty={}, price={}",
+                    serviceName(request.getServiceType()), target, request.getServiceType(), unqReqId, clOrdId,
+                    request.getSymbol(), request.getSide(),
                     request.getQuantity(), request.getPrice());
 
             long rttStart = System.nanoTime();
@@ -89,7 +104,7 @@ public class GrpcOrderService {
 
             return new PlaceOrderResponse(
                     success,
-                    success ? "Order sent successfully" : "Order rejected",
+                    success ? serviceName(request.getServiceType()) + " sent successfully" : serviceName(request.getServiceType()) + " rejected",
                     statusCode,
                     status,
                     firstText(data.path("ref"), data.path("reference"), data.path("clOrdId")),
@@ -126,23 +141,33 @@ public class GrpcOrderService {
         header.put("o", request.getOrgId());
 
         ObjectNode body = root.putObject("d");
-        body.put("sym", request.getSymbol());
-        body.put("price", Double.parseDouble(request.getPrice()));
-        body.put("trdAccId", request.getTradingAccountID());
-        body.put("exg", request.getExchange());
-        body.put("typ", request.getType());
+        body.put("symbol", request.getSymbol());
+        body.put("price", request.getPrice());
+        body.put("tradingAccId", request.getTradingAccountID());
+        body.put("tradingAccNo", request.getTradingAccountNo());
+        body.put("exchange", request.getExchange());
+        body.put("type", request.getType());
         body.put("side", request.getSide());
-        body.put("qty", Double.parseDouble(request.getQuantity()));
+        body.put("quantity", request.getQuantity());
         body.put("tif", request.getTif());
-        body.put("trdDt", tradeDate);
+        body.put("tifDt", tradeDate);
         body.put("custNo", request.getCustomerNo());
         body.put("clOrdId", clOrdId);
         body.put("ordMode", request.getOrderMode());
         body.put("ordCat", request.getOrdCat());
-        body.put("bypRms", request.getBypassRms());
         body.put("rmk", request.getRemark() != null ? request.getRemark() : "");
-        body.put("exBrkId", request.getExecBrokerID());
-        body.put("custdnId", request.getCustodianID());
+        body.put("execBrokerId", request.getExecBrokerID());
+        body.put("custodyInstId", request.getCustodianID());
+        body.put("currencyCode", request.getCurrencyCode());
+        body.put("minPrice", request.getMinPrice());
+        body.put("maxPrice", request.getMaxPrice());
+        body.put("lstTrdPrice", request.getLstTrdPrice());
+        body.put("prvClsPrice", request.getPrvClsPrice());
+        body.put("todayClsPrice", request.getTodayClsPrice());
+        body.put("instruType", request.getInstruType());
+        body.put("byPassRMS", request.getBypassRms());
+        body.put("dClsQty", request.getDClsQty());
+        body.put("mFillQty", request.getMFillQty());
 
         return objectMapper.writeValueAsString(root);
     }
@@ -190,6 +215,19 @@ public class GrpcOrderService {
             }
         }
         return null;
+    }
+
+    private boolean requiresExistingClOrdId(int serviceType) {
+        return serviceType == 3 || serviceType == 4;
+    }
+
+    private String serviceName(int serviceType) {
+        return switch (serviceType) {
+            case 2 -> "new order";
+            case 3 -> "cancel";
+            case 4 -> "amend";
+            default -> "order";
+        };
     }
 
     private boolean notBlank(String s) {

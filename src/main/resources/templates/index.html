@@ -982,6 +982,16 @@
                 </div>
                 <div class="form-row">
                     <div class="form-group">
+                        <label for="po_tradingAccountNo">Trading Account No</label>
+                        <input type="text" id="po_tradingAccountNo" value="">
+                    </div>
+                    <div class="form-group">
+                        <label for="po_currencyCode">Currency Code</label>
+                        <input type="text" id="po_currencyCode" value="">
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
                         <label for="po_tradeDate">Trade Date</label>
                         <input type="date" id="po_tradeDate">
                     </div>
@@ -1029,10 +1039,48 @@
                         </select>
                     </div>
                 </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="po_minPrice">Min Price</label>
+                        <input type="number" id="po_minPrice" value="0" step="0.01" min="0">
+                    </div>
+                    <div class="form-group">
+                        <label for="po_maxPrice">Max Price</label>
+                        <input type="number" id="po_maxPrice" value="0" step="0.01" min="0">
+                    </div>
+                    <div class="form-group">
+                        <label for="po_lstTrdPrice">Last Traded Price</label>
+                        <input type="number" id="po_lstTrdPrice" value="0" step="0.01" min="0">
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="po_prvClsPrice">Previous Close Price</label>
+                        <input type="number" id="po_prvClsPrice" value="0" step="0.01" min="0">
+                    </div>
+                    <div class="form-group">
+                        <label for="po_todayClsPrice">Today Close Price</label>
+                        <input type="number" id="po_todayClsPrice" value="0" step="0.01" min="0">
+                    </div>
+                    <div class="form-group">
+                        <label for="po_instruType">Instrument Type</label>
+                        <input type="number" id="po_instruType" value="0" step="1" min="0">
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="po_dClsQty">D Close Qty</label>
+                        <input type="number" id="po_dClsQty" value="0" step="0.01" min="0">
+                    </div>
+                    <div class="form-group">
+                        <label for="po_mFillQty">M Fill Qty</label>
+                        <input type="number" id="po_mFillQty" value="0" step="0.01" min="0">
+                    </div>
+                </div>
 
                 <div class="button-group">
                     <button class="btn btn-primary" onclick="sendPlaceOrder()">
-                        <span>Send Order</span>
+                        <span>Send</span>
                     </button>
                     <button class="btn btn-secondary" onclick="clearPlaceOrderForm()">
                         Clear
@@ -1167,6 +1215,16 @@
                 </div>
                 <div class="form-row">
                     <div class="form-group">
+                        <label for="bo_tradingAccountNo">Trading Account No</label>
+                        <input type="text" id="bo_tradingAccountNo" value="">
+                    </div>
+                    <div class="form-group">
+                        <label for="bo_currencyCode">Currency Code</label>
+                        <input type="text" id="bo_currencyCode" value="">
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
                         <label for="bo_tradeDate">Trade Date</label>
                         <input type="date" id="bo_tradeDate">
                     </div>
@@ -1202,6 +1260,44 @@
                             <option value="0" selected>0 - No</option>
                             <option value="1">1 - Yes</option>
                         </select>
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="bo_minPrice">Min Price</label>
+                        <input type="number" id="bo_minPrice" value="0" step="0.01" min="0">
+                    </div>
+                    <div class="form-group">
+                        <label for="bo_maxPrice">Max Price</label>
+                        <input type="number" id="bo_maxPrice" value="0" step="0.01" min="0">
+                    </div>
+                    <div class="form-group">
+                        <label for="bo_lstTrdPrice">Last Traded Price</label>
+                        <input type="number" id="bo_lstTrdPrice" value="0" step="0.01" min="0">
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="bo_prvClsPrice">Previous Close Price</label>
+                        <input type="number" id="bo_prvClsPrice" value="0" step="0.01" min="0">
+                    </div>
+                    <div class="form-group">
+                        <label for="bo_todayClsPrice">Today Close Price</label>
+                        <input type="number" id="bo_todayClsPrice" value="0" step="0.01" min="0">
+                    </div>
+                    <div class="form-group">
+                        <label for="bo_instruType">Instrument Type</label>
+                        <input type="number" id="bo_instruType" value="0" step="1" min="0">
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="bo_dClsQty">D Close Qty</label>
+                        <input type="number" id="bo_dClsQty" value="0" step="0.01" min="0">
+                    </div>
+                    <div class="form-group">
+                        <label for="bo_mFillQty">M Fill Qty</label>
+                        <input type="number" id="bo_mFillQty" value="0" step="0.01" min="0">
                     </div>
                 </div>
 
@@ -2009,9 +2105,21 @@
         document.getElementById('po_tradeDate').value = today;
     })();
 
-    async function sendPlaceOrder() {
+    async function sendPlaceOrder(serviceTypeOverride) {
         showLoading(true);
         document.getElementById('poResponsePanel').style.display = 'none';
+        const serviceType = serviceTypeOverride || parseInt(document.getElementById('po_serviceType').value) || 2;
+        const clOrdId = document.getElementById('po_clOrdId').value || '';
+
+        if ((serviceType === 3 || serviceType === 4) && !clOrdId.trim()) {
+            showLoading(false);
+            displayResponse({ error: 'Cl Ord ID is required for amend/cancel' }, false);
+            addLogEntry(`[WS/${serviceLabel(serviceType)}] Cl Ord ID is required`, 'sent');
+            updateConnectionStatus(false);
+            return;
+        }
+
+        document.getElementById('po_serviceType').value = String(serviceType);
 
         const request = {
             grpcHost:        document.getElementById('po_host').value,
@@ -2025,25 +2133,35 @@
             sessionId:       document.getElementById('po_sessionId').value  || '',
             componentId:     document.getElementById('po_componentId').value,
             unqReqId:        document.getElementById('po_unqReqId').value   || '',
-            serviceType:     parseInt(document.getElementById('po_serviceType').value) || 2,
+            serviceType,
             // Body
             symbol:          document.getElementById('po_symbol').value,
             price:           parseFloat(document.getElementById('po_price').value)    || 0,
             tradingAccountID:parseInt(document.getElementById('po_tradingAccountID').value) || 0,
+            tradingAccountNo:document.getElementById('po_tradingAccountNo').value,
             exchange:        document.getElementById('po_exchange').value,
             type:            document.getElementById('po_type').value,
             side:            parseInt(document.getElementById('po_side').value),
-            quantity:        parseInt(document.getElementById('po_quantity').value)   || 0,
+            quantity:        parseFloat(document.getElementById('po_quantity').value) || 0,
             tif:             parseInt(document.getElementById('po_tif').value),
             tradeDate:       document.getElementById('po_tradeDate').value  || '',
             customerNo:      document.getElementById('po_customerNo').value,
-            clOrdId:         document.getElementById('po_clOrdId').value    || '',
+            clOrdId,
             orderMode:       parseInt(document.getElementById('po_orderMode').value)  || 0,
             ordCat:          parseInt(document.getElementById('po_ordCat').value)     || 0,
             bypassRms:       parseInt(document.getElementById('po_bypassRms').value),
             remark:          document.getElementById('po_remark').value,
             execBrokerID:    parseInt(document.getElementById('po_execBrokerID').value) || 0,
-            custodianID:     parseInt(document.getElementById('po_custodianID').value)  || 0
+            custodianID:     parseInt(document.getElementById('po_custodianID').value)  || 0,
+            currencyCode:    document.getElementById('po_currencyCode').value,
+            minPrice:        parseFloat(document.getElementById('po_minPrice').value) || 0,
+            maxPrice:        parseFloat(document.getElementById('po_maxPrice').value) || 0,
+            lstTrdPrice:     parseFloat(document.getElementById('po_lstTrdPrice').value) || 0,
+            prvClsPrice:     parseFloat(document.getElementById('po_prvClsPrice').value) || 0,
+            todayClsPrice:   parseFloat(document.getElementById('po_todayClsPrice').value) || 0,
+            instruType:      parseInt(document.getElementById('po_instruType').value) || 0,
+            dClsQty:         parseFloat(document.getElementById('po_dClsQty').value) || 0,
+            mFillQty:        parseFloat(document.getElementById('po_mFillQty').value) || 0
         };
 
         try {
@@ -2057,7 +2175,7 @@
             displayResponse(result, result.success);
             renderPoResponse(result);
             addLogEntry(
-                `[WS] ${request.symbol} ${request.side === 1 ? 'BUY' : 'SELL'} ${request.quantity}@${request.price} → ${result.success ? result.statusDescription || 'OK' : 'FAILED'}`,
+                `[WS/${serviceLabel(serviceType)}] ${request.symbol} ${request.side === 1 ? 'BUY' : 'SELL'} ${request.quantity}@${request.price} clOrdId=${request.clOrdId || '-'} -> ${result.success ? result.statusDescription || 'OK' : 'FAILED'}`,
                 'sent'
             );
             updateConnectionStatus(true);
@@ -2068,6 +2186,12 @@
         } finally {
             showLoading(false);
         }
+    }
+
+    function serviceLabel(serviceType) {
+        if (serviceType === 3) return 'Cancel';
+        if (serviceType === 4) return 'Amend';
+        return 'New';
     }
 
     function renderPoResponse(r) {
@@ -2116,6 +2240,8 @@
         document.getElementById('po_price').value         = '20.0';
         document.getElementById('po_tif').value           = '0';
         document.getElementById('po_tradingAccountID').value = '20';
+        document.getElementById('po_tradingAccountNo').value = '';
+        document.getElementById('po_currencyCode').value  = '';
         document.getElementById('po_tradeDate').value     = today;
         document.getElementById('po_customerNo').value    = 'CUST-001';
         document.getElementById('po_clOrdId').value       = '';
@@ -2125,6 +2251,14 @@
         document.getElementById('po_execBrokerID').value  = '1';
         document.getElementById('po_custodianID').value   = '1';
         document.getElementById('po_bypassRms').value     = '0';
+        document.getElementById('po_minPrice').value      = '0';
+        document.getElementById('po_maxPrice').value      = '0';
+        document.getElementById('po_lstTrdPrice').value   = '0';
+        document.getElementById('po_prvClsPrice').value   = '0';
+        document.getElementById('po_todayClsPrice').value = '0';
+        document.getElementById('po_instruType').value    = '0';
+        document.getElementById('po_dClsQty').value       = '0';
+        document.getElementById('po_mFillQty').value      = '0';
         document.getElementById('poResponsePanel').style.display = 'none';
     }
 
@@ -2320,8 +2454,9 @@
                 exchange:         document.getElementById('bo_exchange').value,
                 type:             document.getElementById('bo_type').value,
                 side:             parseInt(document.getElementById('bo_side').value),
-                price:            String(parseFloat(document.getElementById('bo_price').value)     || 0),
-                quantity:         String(parseInt(document.getElementById('bo_quantity').value)  || 0),
+                price:            parseFloat(document.getElementById('bo_price').value) || 0,
+                quantity:         parseFloat(document.getElementById('bo_quantity').value) || 0,
+                tradingAccountNo: document.getElementById('bo_tradingAccountNo').value,
                 tif:              parseInt(document.getElementById('bo_tif').value),
                 tradeDate:        document.getElementById('bo_tradeDate').value || '',
                 orderMode:        parseInt(document.getElementById('bo_orderMode').value)   || 0,
@@ -2329,7 +2464,16 @@
                 bypassRms:        parseInt(document.getElementById('bo_bypassRms').value),
                 remark:           document.getElementById('bo_remark').value,
                 execBrokerID:     parseInt(document.getElementById('bo_execBrokerID').value) || 0,
-                custodianID:      parseInt(document.getElementById('bo_custodianID').value)  || 0
+                custodianID:      parseInt(document.getElementById('bo_custodianID').value)  || 0,
+                currencyCode:     document.getElementById('bo_currencyCode').value,
+                minPrice:         parseFloat(document.getElementById('bo_minPrice').value) || 0,
+                maxPrice:         parseFloat(document.getElementById('bo_maxPrice').value) || 0,
+                lstTrdPrice:      parseFloat(document.getElementById('bo_lstTrdPrice').value) || 0,
+                prvClsPrice:      parseFloat(document.getElementById('bo_prvClsPrice').value) || 0,
+                todayClsPrice:    parseFloat(document.getElementById('bo_todayClsPrice').value) || 0,
+                instruType:       parseInt(document.getElementById('bo_instruType').value) || 0,
+                dClsQty:          parseFloat(document.getElementById('bo_dClsQty').value) || 0,
+                mFillQty:         parseFloat(document.getElementById('bo_mFillQty').value) || 0
             }
         };
 
@@ -2399,6 +2543,8 @@
         document.getElementById('bo_type').value          = '2';
         document.getElementById('bo_quantity').value      = '1001';
         document.getElementById('bo_price').value         = '20.0';
+        document.getElementById('bo_tradingAccountNo').value = '';
+        document.getElementById('bo_currencyCode').value  = '';
         document.getElementById('bo_tif').value           = '0';
         document.getElementById('bo_tradeDate').value     = today;
         document.getElementById('bo_remark').value        = 'test';
@@ -2407,6 +2553,14 @@
         document.getElementById('bo_execBrokerID').value  = '74';
         document.getElementById('bo_custodianID').value   = '74';
         document.getElementById('bo_bypassRms').value     = '0';
+        document.getElementById('bo_minPrice').value      = '0';
+        document.getElementById('bo_maxPrice').value      = '0';
+        document.getElementById('bo_lstTrdPrice').value   = '0';
+        document.getElementById('bo_prvClsPrice').value   = '0';
+        document.getElementById('bo_todayClsPrice').value = '0';
+        document.getElementById('bo_instruType').value    = '0';
+        document.getElementById('bo_dClsQty').value       = '0';
+        document.getElementById('bo_mFillQty').value      = '0';
         document.getElementById('boSummaryPanel').style.display = 'none';
     }
 </script>

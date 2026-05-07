@@ -27,9 +27,10 @@ public class GrpcOrderController {
 
     @PostMapping("/place-order")
     public ResponseEntity<PlaceOrderResponse> placeOrder(@RequestBody PlaceOrderRequest request) {
-        log.info("Received place-order request: symbol={}, side={}, qty={}, price={}, wsTarget={}:{}{}",
-                request.getSymbol(), request.getSide(), request.getQuantity(),
-                request.getPrice(), request.getGrpcHost(), request.getGrpcPort(), request.getWebsocketPath());
+        log.info("Received order request: serviceType={}, clOrdId={}, symbol={}, side={}, qty={}, price={}, wsTarget={}:{}{}",
+                request.getServiceType(), request.getClOrdId(), request.getSymbol(), request.getSide(),
+                request.getQuantity(), request.getPrice(), request.getGrpcHost(), request.getGrpcPort(),
+                request.getWebsocketPath());
         return ResponseEntity.ok(grpcOrderService.placeOrder(request));
     }
 
@@ -99,6 +100,16 @@ public class GrpcOrderController {
         r.setRemark(t.getRemark());
         r.setExecBrokerID(t.getExecBrokerID());
         r.setCustodianID(t.getCustodianID());
+        r.setTradingAccountNo(t.getTradingAccountNo());
+        r.setCurrencyCode(t.getCurrencyCode());
+        r.setMinPrice(t.getMinPrice());
+        r.setMaxPrice(t.getMaxPrice());
+        r.setLstTrdPrice(t.getLstTrdPrice());
+        r.setPrvClsPrice(t.getPrvClsPrice());
+        r.setTodayClsPrice(t.getTodayClsPrice());
+        r.setInstruType(t.getInstruType());
+        r.setDClsQty(t.getDClsQty());
+        r.setMFillQty(t.getMFillQty());
         // Override from customer file (tradingAccountID + customerNo only; symbol comes from UI)
         r.setTradingAccountID(entry.getTradeAccId());
         r.setCustomerNo(entry.getCustomerNo());

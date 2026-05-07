@@ -6,7 +6,7 @@ spring:
     name: finexa-fix-tester
 
   kafka:
-    bootstrap-servers: ${KAFKA_BOOTSTRAP_SERVERS:localhost:9093}
+    bootstrap-servers: ${KAFKA_BOOTSTRAP_SERVERS:192.168.122.6:9092,192.168.122.7:9092,192.168.122.8:9092}
 
     consumer:
       auto-offset-reset: earliest
