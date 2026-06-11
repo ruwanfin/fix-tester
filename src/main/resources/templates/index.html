@@ -1099,7 +1099,35 @@
             <div id="bulkorder-tab" class="tab-content">
                 <div class="info-box">
                     <h4>Bulk Orders via WebSocket</h4>
-                    <p>Send concurrent orders using customer records from <strong>customerDetails.txt</strong>. The first N records override <em>tradingAccountID</em>, <em>customerNo</em>, and <em>symbol</em> on each order.</p>
+                    <p id="bo_modeDesc">Send concurrent orders using customer records from <strong>customerDetails.txt</strong>. The first N records override <em>tradingAccountID</em> and <em>customerNo</em> on each order.</p>
+                </div>
+
+                <!-- Mode toggle -->
+                <div style="display:flex;align-items:center;gap:14px;margin-bottom:20px;">
+                    <span style="color:#b0bec5;font-size:0.9rem;font-weight:500;">Customer File</span>
+                    <label style="position:relative;display:inline-block;width:46px;height:24px;cursor:pointer;">
+                        <input type="checkbox" id="bo_useSameAccount" onchange="toggleBulkMode()" style="opacity:0;width:0;height:0;position:absolute;">
+                        <span style="position:absolute;inset:0;background:#37474f;border-radius:24px;transition:.3s;" id="bo_sliderTrack"></span>
+                        <span style="position:absolute;top:3px;left:3px;width:18px;height:18px;background:#fff;border-radius:50%;transition:.3s;" id="bo_sliderThumb"></span>
+                    </label>
+                    <span style="color:#b0bec5;font-size:0.9rem;font-weight:500;">Use Same Account</span>
+                </div>
+
+                <!-- Same-account fields (hidden by default) -->
+                <div id="bo_sameAccountFields" style="display:none;">
+                    <div class="info-box" style="margin-bottom:15px;">
+                        <h4>Same Account Settings</h4>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="bo_sameAccountID">Trading Account ID</label>
+                            <input type="number" id="bo_sameAccountID" value="20" step="1" min="0">
+                        </div>
+                        <div class="form-group">
+                            <label for="bo_sameCustomerNo">Customer No</label>
+                            <input type="text" id="bo_sameCustomerNo" value="CUST-001">
+                        </div>
+                    </div>
                 </div>
 
                 <!-- Order Count -->
@@ -2433,13 +2461,27 @@
         document.getElementById('bo_tradeDate').value = today;
     })();
 
+    function toggleBulkMode() {
+        const on = document.getElementById('bo_useSameAccount').checked;
+        document.getElementById('bo_sameAccountFields').style.display = on ? 'block' : 'none';
+        document.getElementById('bo_sliderTrack').style.background = on ? '#4fc3f7' : '#37474f';
+        document.getElementById('bo_sliderThumb').style.left = on ? '25px' : '3px';
+        document.getElementById('bo_modeDesc').innerHTML = on
+            ? 'Send <strong>N</strong> concurrent orders all using the same Trading Account ID and Customer No entered below.'
+            : 'Send concurrent orders using customer records from <strong>customerDetails.txt</strong>. The first N records override <em>tradingAccountID</em> and <em>customerNo</em> on each order.';
+    }
+
     async function sendBulkOrders() {
         showLoading(true);
         document.getElementById('boSummaryPanel').style.display = 'none';
 
+        const useSameAccount = document.getElementById('bo_useSameAccount').checked;
         const orderCount = parseInt(document.getElementById('bo_orderCount').value) || 1;
         const request = {
             orderCount,
+            useSameAccount,
+            sameAccountID:  useSameAccount ? (parseInt(document.getElementById('bo_sameAccountID').value) || 0) : 0,
+            sameCustomerNo: useSameAccount ? document.getElementById('bo_sameCustomerNo').value : '',
             template: {
                 grpcHost:         document.getElementById('bo_host').value,
                 grpcPort:         parseInt(document.getElementById('bo_port').value)        || 8085,

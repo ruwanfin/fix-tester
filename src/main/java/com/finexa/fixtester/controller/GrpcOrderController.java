@@ -37,11 +37,19 @@ public class GrpcOrderController {
     @PostMapping("/bulk-place-order")
     public ResponseEntity<BulkOrderResponse> bulkPlaceOrder(@RequestBody BulkOrderRequest request) {
         int count = request.getOrderCount();
-        log.info("Received bulk-place-order request: orderCount={}", count);
+        log.info("Received bulk-place-order request: orderCount={}, useSameAccount={}", count, request.isUseSameAccount());
 
-        List<CustomerDataEntry> customers = customerFileService.load(count);
-        if (customers.isEmpty()) {
-            return ResponseEntity.ok(new BulkOrderResponse(0, 0, 0, List.of()));
+        List<CustomerDataEntry> customers;
+        if (request.isUseSameAccount()) {
+            customers = new ArrayList<>();
+            for (int i = 0; i < count; i++) {
+                customers.add(new CustomerDataEntry(request.getSameAccountID(), request.getSameCustomerNo()));
+            }
+        } else {
+            customers = customerFileService.load(count);
+            if (customers.isEmpty()) {
+                return ResponseEntity.ok(new BulkOrderResponse(0, 0, 0, List.of()));
+            }
         }
 
         int threadPoolSize = Math.min(customers.size(), 50);
