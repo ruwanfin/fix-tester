@@ -7,7 +7,7 @@ public class PlaceOrderRequest {
 
     private String grpcHost = "localhost";
     private int    grpcPort = 8085;
-    private String websocketPath = "/oms-streaming-api";
+    private String tcpPath  = "/oms-streaming-api";
 
     private int    product     = 1;
     private String tenantCode  = "DEFAULT_TENANT";

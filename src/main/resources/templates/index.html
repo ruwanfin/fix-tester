@@ -509,8 +509,8 @@
             <div class="tabs">
                 <button class="tab active" onclick="showTab('execution')">Execution Report</button>
                 <button class="tab" onclick="showTab('scenario')">Scenario / Lifecycle</button>
-                <button class="tab" onclick="showTab('placeorder')">Place Order (WebSocket)</button>
-                <button class="tab" onclick="showTab('bulkorder')">Bulk Orders (WebSocket)</button>
+                <button class="tab" onclick="showTab('placeorder')">Place Order (Netty TCP)</button>
+                <button class="tab" onclick="showTab('bulkorder')">Bulk Orders (Netty TCP)</button>
                 <button class="tab" onclick="showTab('fixdma')">FIXDMA (Bloomberg)</button>
                 <button class="tab" onclick="showTab('raw')">Raw Message</button>
             </div>
@@ -852,16 +852,16 @@
                 </div>
             </div>
 
-            <!-- Place Order (WebSocket) Tab -->
+            <!-- Place Order (Netty TCP) Tab -->
             <div id="placeorder-tab" class="tab-content">
                 <div class="info-box">
-                    <h4>Place Order via WebSocket</h4>
-                    <p>Send an order request directly to the OMS Netty WebSocket service.</p>
+                    <h4>Place Order via Netty TCP</h4>
+                    <p>Send an order request directly to the OMS Netty TCP service.</p>
                 </div>
 
                 <!-- Connection -->
                 <div class="info-box" style="margin-bottom:15px;">
-                    <h4>WebSocket Connection</h4>
+                    <h4>Netty TCP Connection</h4>
                 </div>
                 <div class="form-row">
                     <div class="form-group">
@@ -875,8 +875,8 @@
                 </div>
                 <div class="form-row">
                     <div class="form-group">
-                        <label for="po_wsPath">Path</label>
-                        <input type="text" id="po_wsPath" value="/oms-streaming-api">
+                        <label for="po_tcpPath">TCP Path</label>
+                        <input type="text" id="po_tcpPath" value="/oms-streaming-api">
                     </div>
                 </div>
 
@@ -1087,18 +1087,18 @@
                     </button>
                 </div>
 
-                <!-- WebSocket Response -->
+                <!-- Netty TCP Response -->
                 <div id="poResponsePanel" style="margin-top:20px;display:none;">
-                    <h4 style="color:#b0bec5;font-size:0.95rem;margin-bottom:10px;">WebSocket Response</h4>
+                    <h4 style="color:#b0bec5;font-size:0.95rem;margin-bottom:10px;">Netty TCP Response</h4>
                     <div id="poResponseGrid" style="display:grid;grid-template-columns:1fr 1fr;gap:10px;font-size:0.85rem;">
                     </div>
                 </div>
             </div>
 
-            <!-- Bulk Orders (WebSocket) Tab -->
+            <!-- Bulk Orders (Netty TCP) Tab -->
             <div id="bulkorder-tab" class="tab-content">
                 <div class="info-box">
-                    <h4>Bulk Orders via WebSocket</h4>
+                    <h4>Bulk Orders via Netty TCP</h4>
                     <p id="bo_modeDesc">Send concurrent orders using customer records from <strong>customerDetails.txt</strong>. The first N records override <em>tradingAccountID</em> and <em>customerNo</em> on each order.</p>
                 </div>
 
@@ -1138,7 +1138,7 @@
 
                 <!-- Connection -->
                 <div class="info-box" style="margin-bottom:15px;margin-top:10px;">
-                    <h4>WebSocket Connection</h4>
+                    <h4>Netty TCP Connection</h4>
                 </div>
                 <div class="form-row">
                     <div class="form-group">
@@ -1152,8 +1152,8 @@
                 </div>
                 <div class="form-row">
                     <div class="form-group">
-                        <label for="bo_wsPath">Path</label>
-                        <input type="text" id="bo_wsPath" value="/oms-streaming-api">
+                        <label for="bo_tcpPath">TCP Path</label>
+                        <input type="text" id="bo_tcpPath" value="/oms-streaming-api">
                     </div>
                 </div>
 
@@ -2125,7 +2125,7 @@
     // Initialise scenario tab with defaults on page load
     resetScenarioDefaults();
 
-    // Place Order (WebSocket) Tab
+    // Place Order (Netty TCP) Tab
 
     // Default trade date to today
     (function() {
@@ -2152,7 +2152,7 @@
         const request = {
             grpcHost:        document.getElementById('po_host').value,
             grpcPort:        parseInt(document.getElementById('po_port').value) || 8085,
-            websocketPath:   document.getElementById('po_wsPath').value || '/oms-streaming-api',
+            tcpPath:         document.getElementById('po_tcpPath').value || '/oms-streaming-api',
             // Header
             product:         parseInt(document.getElementById('po_product').value)     || 1,
             tenantCode:      document.getElementById('po_tenantCode').value,
@@ -2209,7 +2209,7 @@
             updateConnectionStatus(true);
         } catch (error) {
             displayResponse({ error: error.message }, false);
-            addLogEntry(`WebSocket error: ${error.message}`, 'sent');
+            addLogEntry(`Netty TCP error: ${error.message}`, 'sent');
             updateConnectionStatus(false);
         } finally {
             showLoading(false);
@@ -2251,7 +2251,7 @@
         const today = new Date().toISOString().split('T')[0];
         document.getElementById('po_host').value          = 'localhost';
         document.getElementById('po_port').value          = '8085';
-        document.getElementById('po_wsPath').value        = '/oms-streaming-api';
+        document.getElementById('po_tcpPath').value       = '/oms-streaming-api';
         document.getElementById('po_product').value       = '1';
         document.getElementById('po_tenantCode').value    = 'DEFAULT_TENANT';
         document.getElementById('po_loginId').value       = '1';
@@ -2454,7 +2454,7 @@
     // Initialise FIXDMA tab field visibility
     toggleDmaFields();
 
-    // Bulk Orders (WebSocket) Tab
+    // Bulk Orders (Netty TCP) Tab
 
     (function() {
         const today = new Date().toISOString().split('T')[0];
@@ -2485,7 +2485,7 @@
             template: {
                 grpcHost:         document.getElementById('bo_host').value,
                 grpcPort:         parseInt(document.getElementById('bo_port').value)        || 8085,
-                websocketPath:    document.getElementById('bo_wsPath').value || '/oms-streaming-api',
+                tcpPath:          document.getElementById('bo_tcpPath').value || '/oms-streaming-api',
                 product:          parseInt(document.getElementById('bo_product').value)     || 1,
                 tenantCode:       document.getElementById('bo_tenantCode').value,
                 loginId:          parseInt(document.getElementById('bo_loginId').value)     || 0,
@@ -2572,7 +2572,7 @@
         document.getElementById('bo_orderCount').value    = '10';
         document.getElementById('bo_host').value          = 'localhost';
         document.getElementById('bo_port').value          = '8085';
-        document.getElementById('bo_wsPath').value        = '/oms-streaming-api';
+        document.getElementById('bo_tcpPath').value       = '/oms-streaming-api';
         document.getElementById('bo_product').value       = '1';
         document.getElementById('bo_tenantCode').value    = 'DEFAULT_TENANT';
         document.getElementById('bo_loginId').value       = '1';

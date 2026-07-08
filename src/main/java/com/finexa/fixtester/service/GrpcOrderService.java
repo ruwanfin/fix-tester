@@ -3,52 +3,46 @@ package com.finexa.fixtester.service;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
-import com.finexa.fixtester.dto
-        .PlaceOrderRequest;
+import com.finexa.fixtester.dto.PlaceOrderRequest;
 import com.finexa.fixtester.dto.PlaceOrderResponse;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
-import java.net.URI;
-import java.net.http.HttpClient;
-import java.net.http.WebSocket;
-import java.time.Duration;
+import java.io.DataInputStream;
+import java.io.DataOutputStream;
+import java.net.InetSocketAddress;
+import java.net.Socket;
+import java.nio.charset.StandardCharsets;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
-import java.util.concurrent.CompletionStage;
-import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.TimeUnit;
 
 @Service
 @Slf4j
 public class GrpcOrderService {
 
-    private static final int DEFAULT_WS_PORT = 8085;
-    private static final String DEFAULT_WS_PATH = "/oms-streaming-api";
+    private static final int    DEFAULT_TCP_PORT    = 8085;
+    private static final String DEFAULT_TCP_PATH    = "/oms-streaming-api";
+    private static final int    CONNECT_TIMEOUT_MS  = 10_000;
+    private static final int    READ_TIMEOUT_MS     = 60_000;
+    private static final String HANDSHAKE_CONNECTED = "CONNECTED";
 
-    private final HttpClient httpClient = HttpClient.newBuilder()
-            .connectTimeout(Duration.ofSeconds(10))
-            .build();
     private final ObjectMapper objectMapper = new ObjectMapper();
 
     public PlaceOrderResponse placeOrder(PlaceOrderRequest request) {
 
-        URI target = URI.create("ws://" + request.getGrpcHost() + ":"
-                + resolvePort(request.getGrpcPort()) + resolvePath(request.getWebsocketPath()));
+        String host    = request.getGrpcHost();
+        int    port    = resolvePort(request.getGrpcPort());
+        String tcpPath = notBlank(request.getTcpPath()) ? request.getTcpPath() : DEFAULT_TCP_PATH;
 
         try {
             if (requiresExistingClOrdId(request.getServiceType()) && !notBlank(request.getClOrdId())) {
                 return new PlaceOrderResponse(
                         false,
                         serviceName(request.getServiceType()) + " requires Cl Ord ID",
-                        0,
-                        0,
-                        null,
-                        null,
-                        0,
+                        0, 0, null, null, 0,
                         "Cl Ord ID is required for amend/cancel",
-                        null,
-                        0L);
+                        null, 0L);
             }
 
             String unqReqId = notBlank(request.getUnqReqId())
@@ -67,44 +61,34 @@ public class GrpcOrderService {
                     ? request.getTradeDate()
                     : LocalDate.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd"));
 
-            String wsRequest = buildWebSocketRequestJson(request, unqReqId, sessionId, clOrdId, tradeDate);
+            String requestJson = buildRequestJson(request, unqReqId, sessionId, clOrdId, tradeDate);
 
-            log.info("Sending WebSocket {} to {}: serviceType={}, unqReqId={}, clOrdId={}, symbol={}, side={}, qty={}, price={}",
-                    serviceName(request.getServiceType()), target, request.getServiceType(), unqReqId, clOrdId,
-                    request.getSymbol(), request.getSide(),
-                    request.getQuantity(), request.getPrice());
+            log.info("Sending Netty TCP {} to {}:{}{}: serviceType={}, unqReqId={}, clOrdId={}, symbol={}, side={}, qty={}, price={}",
+                    serviceName(request.getServiceType()), host, port, tcpPath,
+                    request.getServiceType(), unqReqId, clOrdId,
+                    request.getSymbol(), request.getSide(), request.getQuantity(), request.getPrice());
 
             long rttStart = System.nanoTime();
 
-            SingleMessageListener listener = new SingleMessageListener();
-            WebSocket webSocket = httpClient.newWebSocketBuilder()
-                    .connectTimeout(Duration.ofSeconds(10))
-                    .buildAsync(target, listener)
-                    .get(10, TimeUnit.SECONDS);
-
-            webSocket.sendText(wsRequest, true).get(10, TimeUnit.SECONDS);
-            String responseJson = listener.response().get(60, TimeUnit.SECONDS);
-            webSocket.sendClose(WebSocket.NORMAL_CLOSURE, "done");
+            String responseJson = sendAndReceive(host, port, tcpPath, requestJson);
 
             long rttMs = TimeUnit.NANOSECONDS.toMillis(System.nanoTime() - rttStart);
             JsonNode response = objectMapper.readTree(responseJson);
             JsonNode data = response.path("d");
 
-            int statusCode = intValue(response.path("st"), 0);
-            int status = intValue(data.path("sts"), 0);
+            int    statusCode        = intValue(response.path("st"), 0);
+            int    status            = intValue(data.path("sts"), 0);
             String statusDescription = textValue(data.path("stsDesc"));
-            String errorMessage = textValue(data.path("em"));
-            boolean success = errorMessage == null || errorMessage.isBlank();
+            String errorMessage      = textValue(data.path("em"));
+            boolean success          = errorMessage == null || errorMessage.isBlank();
 
-            log.info("WebSocket order response: statusCode={}, status={}, desc={}, rttMs={}",
-                    statusCode,
-                    status,
-                    statusDescription,
-                    rttMs);
+            log.info("Netty TCP order response: statusCode={}, status={}, desc={}, rttMs={}",
+                    statusCode, status, statusDescription, rttMs);
 
             return new PlaceOrderResponse(
                     success,
-                    success ? serviceName(request.getServiceType()) + " sent successfully" : serviceName(request.getServiceType()) + " rejected",
+                    success ? serviceName(request.getServiceType()) + " sent successfully"
+                            : serviceName(request.getServiceType()) + " rejected",
                     statusCode,
                     status,
                     firstText(data.path("ref"), data.path("reference"), data.path("clOrdId")),
@@ -116,15 +100,61 @@ public class GrpcOrderService {
             );
 
         } catch (Exception e) {
-            log.error("Unexpected WebSocket order error: {}", e.getMessage(), e);
+            log.error("Unexpected Netty TCP order error: {}", e.getMessage(), e);
             return new PlaceOrderResponse(
                     false, "Error: " + e.getMessage(),
                     0, 0, null, null, 0, e.getMessage(), null, 0L);
         }
     }
 
-    private String buildWebSocketRequestJson(PlaceOrderRequest request, String unqReqId,
-                                             String sessionId, String clOrdId, String tradeDate) throws Exception {
+    /**
+     * Connects via plain TCP, performs the TcpHandshakeHandler exchange, then
+     * sends the length-prefixed JSON request and reads the length-prefixed response.
+     *
+     * Wire protocol (all frames: 4-byte big-endian length + UTF-8 body):
+     *   1. Client → Server : path  (e.g. "/oms-tcp")
+     *   2. Server → Client : "CONNECTED"  or  "ERROR:invalid_path" + close
+     *   3. Client → Server : OrderRequestDTO JSON
+     *   4. Server → Client : OrderResponseDTO JSON
+     */
+    private String sendAndReceive(String host, int port, String path, String json) throws Exception {
+        try (Socket socket = new Socket()) {
+            socket.connect(new InetSocketAddress(host, port), CONNECT_TIMEOUT_MS);
+            socket.setSoTimeout(READ_TIMEOUT_MS);
+
+            DataOutputStream out = new DataOutputStream(socket.getOutputStream());
+            DataInputStream  in  = new DataInputStream(socket.getInputStream());
+
+            // handshake
+            writeFrame(out, path);
+            String handshakeReply = readFrame(in);
+            if (!HANDSHAKE_CONNECTED.equals(handshakeReply)) {
+                throw new IllegalStateException("TCP handshake failed: " + handshakeReply);
+            }
+            log.debug("TCP handshake accepted: path={}", path);
+
+            // order
+            writeFrame(out, json);
+            return readFrame(in);
+        }
+    }
+
+    private void writeFrame(DataOutputStream out, String text) throws Exception {
+        byte[] bytes = text.getBytes(StandardCharsets.UTF_8);
+        out.writeInt(bytes.length);
+        out.write(bytes);
+        out.flush();
+    }
+
+    private String readFrame(DataInputStream in) throws Exception {
+        int length = in.readInt();
+        byte[] bytes = new byte[length];
+        in.readFully(bytes);
+        return new String(bytes, StandardCharsets.UTF_8);
+    }
+
+    private String buildRequestJson(PlaceOrderRequest request, String unqReqId,
+                                    String sessionId, String clOrdId, String tradeDate) throws Exception {
         ObjectNode root = objectMapper.createObjectNode();
         root.put("s", request.getServiceType());
         root.put("tm", System.currentTimeMillis());
@@ -173,25 +203,14 @@ public class GrpcOrderService {
     }
 
     private int resolvePort(int port) {
-        return port > 0 ? port : DEFAULT_WS_PORT;
-    }
-
-    private String resolvePath(String path) {
-        String resolved = notBlank(path) ? path : DEFAULT_WS_PATH;
-        return resolved.startsWith("/") ? resolved : "/" + resolved;
+        return port > 0 ? port : DEFAULT_TCP_PORT;
     }
 
     private int intValue(JsonNode node, int fallback) {
-        if (node == null || node.isMissingNode() || node.isNull()) {
-            return fallback;
-        }
-        if (node.isInt() || node.isLong()) {
-            return node.asInt();
-        }
+        if (node == null || node.isMissingNode() || node.isNull()) return fallback;
+        if (node.isInt() || node.isLong()) return node.asInt();
         String value = node.asText();
-        if (!notBlank(value)) {
-            return fallback;
-        }
+        if (!notBlank(value)) return fallback;
         try {
             return Integer.parseInt(value);
         } catch (NumberFormatException ignored) {
@@ -200,9 +219,7 @@ public class GrpcOrderService {
     }
 
     private String textValue(JsonNode node) {
-        if (node == null || node.isMissingNode() || node.isNull()) {
-            return null;
-        }
+        if (node == null || node.isMissingNode() || node.isNull()) return null;
         String value = node.asText();
         return notBlank(value) ? value : null;
     }
@@ -210,9 +227,7 @@ public class GrpcOrderService {
     private String firstText(JsonNode... nodes) {
         for (JsonNode node : nodes) {
             String value = textValue(node);
-            if (value != null) {
-                return value;
-            }
+            if (value != null) return value;
         }
         return null;
     }
@@ -232,34 +247,5 @@ public class GrpcOrderService {
 
     private boolean notBlank(String s) {
         return s != null && !s.isBlank();
-    }
-
-    private static class SingleMessageListener implements WebSocket.Listener {
-        private final CompletableFuture<String> response = new CompletableFuture<>();
-        private final StringBuilder message = new StringBuilder();
-
-        CompletableFuture<String> response() {
-            return response;
-        }
-
-        @Override
-        public void onOpen(WebSocket webSocket) {
-            webSocket.request(1);
-        }
-
-        @Override
-        public CompletionStage<?> onText(WebSocket webSocket, CharSequence data, boolean last) {
-            message.append(data);
-            if (last) {
-                response.complete(message.toString());
-            }
-            webSocket.request(1);
-            return CompletableFuture.completedFuture(null);
-        }
-
-        @Override
-        public void onError(WebSocket webSocket, Throwable error) {
-            response.completeExceptionally(error);
-        }
     }
 }
