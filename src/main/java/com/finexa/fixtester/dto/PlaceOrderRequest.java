@@ -1,5 +1,6 @@
 package com.finexa.fixtester.dto;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Data;
 
 @Data
@@ -32,6 +33,8 @@ public class PlaceOrderRequest {
     private String tradeDate;
     private String customerNo       = "CUST-001";
     private String clOrdId;
+    @JsonProperty("deskOrdRef")
+    private String deskOrderRef     = "";
     private int    orderMode        = 0;
     private int    ordCat           = 1;
     private int    bypassRms        = 0;

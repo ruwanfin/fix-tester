@@ -1006,6 +1006,10 @@
                         <input type="text" id="po_clOrdId" placeholder="auto-generated">
                     </div>
                     <div class="form-group">
+                        <label for="po_deskOrderRef">desk Order Ref</label>
+                        <input type="text" id="po_deskOrderRef" value="">
+                    </div>
+                    <div class="form-group">
                         <label for="po_remark">Remark</label>
                         <input type="text" id="po_remark" value="test">
                     </div>
@@ -1255,6 +1259,10 @@
                     <div class="form-group">
                         <label for="bo_tradeDate">Trade Date</label>
                         <input type="date" id="bo_tradeDate">
+                    </div>
+                    <div class="form-group">
+                        <label for="bo_deskOrderRef">desk Order Ref</label>
+                        <input type="text" id="bo_deskOrderRef" value="">
                     </div>
                     <div class="form-group">
                         <label for="bo_remark">Remark</label>
@@ -2175,6 +2183,7 @@
             tradeDate:       document.getElementById('po_tradeDate').value  || '',
             customerNo:      document.getElementById('po_customerNo').value,
             clOrdId,
+            deskOrdRef:      document.getElementById('po_deskOrderRef').value || '',
             orderMode:       parseInt(document.getElementById('po_orderMode').value)  || 0,
             ordCat:          parseInt(document.getElementById('po_ordCat').value)     || 0,
             bypassRms:       parseInt(document.getElementById('po_bypassRms').value),
@@ -2273,6 +2282,7 @@
         document.getElementById('po_tradeDate').value     = today;
         document.getElementById('po_customerNo').value    = 'CUST-001';
         document.getElementById('po_clOrdId').value       = '';
+        document.getElementById('po_deskOrderRef').value  = '';
         document.getElementById('po_remark').value        = 'test';
         document.getElementById('po_ordCat').value        = '1';
         document.getElementById('po_orderMode').value     = '0';
@@ -2501,6 +2511,7 @@
                 tradingAccountNo: document.getElementById('bo_tradingAccountNo').value,
                 tif:              parseInt(document.getElementById('bo_tif').value),
                 tradeDate:        document.getElementById('bo_tradeDate').value || '',
+                deskOrdRef:       document.getElementById('bo_deskOrderRef').value || '',
                 orderMode:        parseInt(document.getElementById('bo_orderMode').value)   || 0,
                 ordCat:           parseInt(document.getElementById('bo_ordCat').value)      || 0,
                 bypassRms:        parseInt(document.getElementById('bo_bypassRms').value),
@@ -2589,6 +2600,7 @@
         document.getElementById('bo_currencyCode').value  = '';
         document.getElementById('bo_tif').value           = '0';
         document.getElementById('bo_tradeDate').value     = today;
+        document.getElementById('bo_deskOrderRef').value  = '';
         document.getElementById('bo_remark').value        = 'test';
         document.getElementById('bo_ordCat').value        = '1';
         document.getElementById('bo_orderMode').value     = '0';

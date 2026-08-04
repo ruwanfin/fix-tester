@@ -102,6 +102,7 @@ public class GrpcOrderController {
         r.setTif(t.getTif());
         r.setTradeDate(t.getTradeDate());
         r.setClOrdId(null);     // auto-generate per order
+        r.setDeskOrderRef(t.getDeskOrderRef());
         r.setOrderMode(t.getOrderMode());
         r.setOrdCat(t.getOrdCat());
         r.setBypassRms(t.getBypassRms());
