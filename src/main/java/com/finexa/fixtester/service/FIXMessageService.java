@@ -343,13 +343,13 @@ public class FIXMessageService  {
                     ordType, exchange, tif);
             case "G" -> FIXMessageBuilder.createDmaAmend(
                     session, r.getMsgSeqNum(), sender, target, subId,
-                    r.getClOrdId(), r.getAccount(), r.getSymbol(),
+                    handlInst, r.getClOrdId(), r.getAccount(), r.getSymbol(),
                     r.getSide(), r.getOrigClOrdId(),
                     r.getPrice(), (int) r.getMinQty(), (int) r.getQuantity(),
                     ordType, exchange, tif);
             case "F" -> FIXMessageBuilder.createDmaCancel(
                     session, r.getMsgSeqNum(), sender, target, subId,
-                    r.getClOrdId(), r.getAccount(), r.getSymbol(),
+                    handlInst, r.getClOrdId(), r.getAccount(), r.getSymbol(),
                     r.getSide(), (int) r.getQuantity(), r.getOrigClOrdId());
             default -> throw new IllegalArgumentException("Unknown FIXDMA message type: " + r.getMsgType());
         };

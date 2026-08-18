@@ -1516,8 +1516,8 @@
                         <h4>New Order Specific (35=D)</h4>
                     </div>
                     <div class="form-group">
-                        <label for="dma_handlInst">Handl Inst (21)</label>
-                        <select id="dma_handlInst">
+                        <label for="dma_handlInst_d">Handl Inst (21)</label>
+                        <select id="dma_handlInst_d">
                             <option value="1" selected>1 – Automated Execution, No Broker</option>
                             <option value="2">2 – Automated Execution, Broker OK</option>
                             <option value="3">3 – Manual Order</option>
@@ -1531,8 +1531,36 @@
                         <h4>Amend Specific (35=G)</h4>
                     </div>
                     <div class="form-group">
+                        <label for="dma_handlInst_g">Handl Inst (21)</label>
+                        <select id="dma_handlInst_g">
+                            <option value="1" selected>1 – Automated Execution, No Broker</option>
+                            <option value="2">2 – Automated Execution, Broker OK</option>
+                            <option value="3">3 – Manual Order</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
                         <label for="dma_minQty">Min Qty (138)</label>
                         <input type="number" id="dma_minQty" value="0" step="1" min="0">
+                    </div>
+                </div>
+
+                <!-- F-only fields -->
+                <div id="dma_fFields" style="display:none;">
+                    <div class="info-box" style="margin-bottom:15px;margin-top:20px;">
+                        <h4>Cancel Specific (35=F)</h4>
+                        <p>Order Cancel Request requires <strong>Orig Cl Ord ID (41)</strong> above, plus Symbol, Side and Order Qty from the fields above.</p>
+                    </div>
+                    <div class="form-group">
+                        <label for="dma_handlInst_f">Handl Inst (21)</label>
+                        <select id="dma_handlInst_f">
+                            <option value="1" selected>1 – Automated Execution, No Broker</option>
+                            <option value="2">2 – Automated Execution, Broker OK</option>
+                            <option value="3">3 – Manual Order</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="dma_cancelText">Text (58) — optional cancel reason</label>
+                        <input type="text" id="dma_cancelText" placeholder="e.g., Client requested cancel">
                     </div>
                 </div>
 
@@ -2306,8 +2334,16 @@
         const type = document.getElementById('dma_msgType').value;
         document.getElementById('dma_dFields').style.display = (type === 'D') ? 'block' : 'none';
         document.getElementById('dma_gFields').style.display = (type === 'G') ? 'block' : 'none';
+        document.getElementById('dma_fFields').style.display = (type === 'F') ? 'block' : 'none';
         // Account (tag 1) is configurable for all message types
         document.getElementById('dma_accountGroup').style.display = 'flex';
+    }
+
+    function getDmaHandlInst() {
+        const type = document.getElementById('dma_msgType').value;
+        const id = type === 'D' ? 'dma_handlInst_d' : type === 'G' ? 'dma_handlInst_g' : 'dma_handlInst_f';
+        const el = document.getElementById(id);
+        return el ? el.value : '1';
     }
 
     function fillDmaSampleD() {
@@ -2329,7 +2365,7 @@
         document.getElementById('dma_ordType').value         = '2';
         document.getElementById('dma_exchange').value        = 'TDWL';
         document.getElementById('dma_tif').value             = '0';
-        document.getElementById('dma_handlInst').value       = '1';
+        document.getElementById('dma_handlInst_d').value     = '1';
         toggleDmaFields();
     }
 
@@ -2353,6 +2389,7 @@
         document.getElementById('dma_exchange').value        = 'TDWL';
         document.getElementById('dma_tif').value             = '0';
         document.getElementById('dma_minQty').value          = '0';
+        document.getElementById('dma_handlInst_g').value     = '1';
         toggleDmaFields();
     }
 
@@ -2374,14 +2411,23 @@
         document.getElementById('dma_ordType').value         = '2';
         document.getElementById('dma_exchange').value        = 'TDWL';
         document.getElementById('dma_tif').value             = '0';
+        document.getElementById('dma_handlInst_f').value     = '1';
         toggleDmaFields();
     }
 
     async function sendFixDma() {
+        const msgType = document.getElementById('dma_msgType').value;
+        const origClOrdId = document.getElementById('dma_origClOrdId').value.trim();
+
+        if ((msgType === 'G' || msgType === 'F') && !origClOrdId) {
+            displayResponse({ error: `Orig Cl Ord ID (41) is required for ${msgType === 'G' ? 'Amend' : 'Cancel'} (35=${msgType})` }, false);
+            addLogEntry(`[FIXDMA] Orig Cl Ord ID is required for 35=${msgType}`, 'sent');
+            return;
+        }
+
         showLoading(true);
         document.getElementById('dmaResponsePanel').style.display = 'none';
 
-        const msgType = document.getElementById('dma_msgType').value;
         const request = {
             sessionId:         document.getElementById('dma_sessionId').value,
             msgSeqNum:         parseInt(document.getElementById('dma_msgSeqNum').value) || 0,
@@ -2390,7 +2436,7 @@
             senderSubId:       document.getElementById('dma_senderSubId').value,
             msgType:           msgType,
             clOrdId:           document.getElementById('dma_clOrdId').value,
-            origClOrdId:       document.getElementById('dma_origClOrdId').value,
+            origClOrdId:       origClOrdId,
             account:           document.getElementById('dma_account').value,
             symbol:            document.getElementById('dma_symbol').value,
             securityId:        document.getElementById('dma_securityId').value,
@@ -2401,8 +2447,9 @@
             ordType:           document.getElementById('dma_ordType').value,
             exchange:          document.getElementById('dma_exchange').value,
             tif:               document.getElementById('dma_tif').value,
-            handlInst:         document.getElementById('dma_handlInst').value,
-            minQty:            parseFloat(document.getElementById('dma_minQty').value) || 0
+            handlInst:         getDmaHandlInst(),
+            minQty:            parseFloat(document.getElementById('dma_minQty').value) || 0,
+            text:              document.getElementById('dma_cancelText') ? document.getElementById('dma_cancelText').value : ''
         };
 
         try {
@@ -2455,8 +2502,11 @@
         document.getElementById('dma_ordType').value          = '2';
         document.getElementById('dma_exchange').value         = 'TDWL';
         document.getElementById('dma_tif').value              = '0';
-        document.getElementById('dma_handlInst').value        = '1';
+        document.getElementById('dma_handlInst_d').value      = '1';
+        document.getElementById('dma_handlInst_g').value      = '1';
+        document.getElementById('dma_handlInst_f').value      = '1';
         document.getElementById('dma_minQty').value           = '0';
+        document.getElementById('dma_cancelText').value       = '';
         document.getElementById('dmaResponsePanel').style.display = 'none';
         toggleDmaFields();
     }

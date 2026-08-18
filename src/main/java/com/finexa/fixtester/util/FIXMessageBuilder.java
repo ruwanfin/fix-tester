@@ -695,7 +695,7 @@ public class FIXMessageBuilder {
      */
     public static String createDmaAmend(String sessionId, int msgSeqNum,
                                         String senderCompId, String targetCompId, String senderSubId,
-                                        String clOrdId, String account, String symbol,
+                                        String handlInst, String clOrdId, String account, String symbol,
                                         int side, String origClOrdId,
                                         double price, int minQty, int quantity,
                                         String ordType, String exchange, String tif) {
@@ -722,6 +722,7 @@ public class FIXMessageBuilder {
                 .addField(TAG_ORDER_QTY, quantity)
                 .addField(TAG_ORD_TYPE, ordType != null ? ordType : "2")
                 .addField(TAG_EXCHANGE, exchange)
+                .addField(TAG_HANDL_INST, handlInst)
                 .addField(TAG_TIME_IN_FORCE, tif != null ? tif : "0")
                 .build();
 
@@ -734,7 +735,7 @@ public class FIXMessageBuilder {
      */
     public static String createDmaCancel(String sessionId, int msgSeqNum,
                                          String senderCompId, String targetCompId, String senderSubId,
-                                         String clOrdId, String account, String symbol,
+                                         String handlInst, String clOrdId, String account, String symbol,
                                          int side, int quantity, String origClOrdId) {
         if (msgSeqNum <= 0) {
             msgSeqNum = sequenceCounter.getAndIncrement();
@@ -753,6 +754,7 @@ public class FIXMessageBuilder {
                 .addField(TAG_SYMBOL, symbol)
                 .addField(TAG_SIDE, String.valueOf(side))
                 .addField(TAG_ORDER_QTY, quantity)
+                .addField(TAG_HANDL_INST, handlInst)
                 .addField(TAG_ORIG_CL_ORD_ID, origClOrdId)
                 .addField(TAG_TRANSACT_TIME, timestamp)
                 .build();
