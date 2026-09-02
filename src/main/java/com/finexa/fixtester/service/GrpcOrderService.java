@@ -184,6 +184,7 @@ public class GrpcOrderService {
         body.put("custNo", request.getCustomerNo());
         body.put("clOrdId", clOrdId);
         body.put("deskOrdRef", request.getDeskOrderRef() != null ? request.getDeskOrderRef() : "");
+        body.put("cancelAllChildren", request.isCancelAllChildren());
         body.put("ordMode", request.getOrderMode());
         body.put("ordCat", request.getOrdCat());
         body.put("rmk", request.getRemark() != null ? request.getRemark() : "");

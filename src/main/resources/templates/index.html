@@ -1023,6 +1023,13 @@
                         <label for="po_orderMode">Order Mode</label>
                         <input type="number" id="po_orderMode" value="0" step="1" min="0">
                     </div>
+                    <div class="form-group">
+                        <label for="po_cancelAllChildren">Cancel All Children</label>
+                        <select id="po_cancelAllChildren">
+                            <option value="false" selected>false</option>
+                            <option value="true">true</option>
+                        </select>
+                    </div>
                 </div>
                 <div class="form-row">
                     <div class="form-group">
@@ -1277,6 +1284,13 @@
                     <div class="form-group">
                         <label for="bo_orderMode">Order Mode</label>
                         <input type="number" id="bo_orderMode" value="0" step="1" min="0">
+                    </div>
+                    <div class="form-group">
+                        <label for="bo_cancelAllChildren">Cancel All Children</label>
+                        <select id="bo_cancelAllChildren">
+                            <option value="false" selected>false</option>
+                            <option value="true">true</option>
+                        </select>
                     </div>
                 </div>
                 <div class="form-row">
@@ -2212,6 +2226,7 @@
             customerNo:      document.getElementById('po_customerNo').value,
             clOrdId,
             deskOrdRef:      document.getElementById('po_deskOrderRef').value || '',
+            cancelAllChildren: document.getElementById('po_cancelAllChildren').value === 'true',
             orderMode:       parseInt(document.getElementById('po_orderMode').value)  || 0,
             ordCat:          parseInt(document.getElementById('po_ordCat').value)     || 0,
             bypassRms:       parseInt(document.getElementById('po_bypassRms').value),
@@ -2311,6 +2326,7 @@
         document.getElementById('po_customerNo').value    = 'CUST-001';
         document.getElementById('po_clOrdId').value       = '';
         document.getElementById('po_deskOrderRef').value  = '';
+        document.getElementById('po_cancelAllChildren').value = 'false';
         document.getElementById('po_remark').value        = 'test';
         document.getElementById('po_ordCat').value        = '1';
         document.getElementById('po_orderMode').value     = '0';
@@ -2562,6 +2578,7 @@
                 tif:              parseInt(document.getElementById('bo_tif').value),
                 tradeDate:        document.getElementById('bo_tradeDate').value || '',
                 deskOrdRef:       document.getElementById('bo_deskOrderRef').value || '',
+                cancelAllChildren: document.getElementById('bo_cancelAllChildren').value === 'true',
                 orderMode:        parseInt(document.getElementById('bo_orderMode').value)   || 0,
                 ordCat:           parseInt(document.getElementById('bo_ordCat').value)      || 0,
                 bypassRms:        parseInt(document.getElementById('bo_bypassRms').value),
@@ -2651,6 +2668,7 @@
         document.getElementById('bo_tif').value           = '0';
         document.getElementById('bo_tradeDate').value     = today;
         document.getElementById('bo_deskOrderRef').value  = '';
+        document.getElementById('bo_cancelAllChildren').value = 'false';
         document.getElementById('bo_remark').value        = 'test';
         document.getElementById('bo_ordCat').value        = '1';
         document.getElementById('bo_orderMode').value     = '0';

@@ -35,6 +35,8 @@ public class PlaceOrderRequest {
     private String clOrdId;
     @JsonProperty("deskOrdRef")
     private String deskOrderRef     = "";
+    @JsonProperty("cancelAllChildren")
+    private boolean cancelAllChildren;
     private int    orderMode        = 0;
     private int    ordCat           = 1;
     private int    bypassRms        = 0;
