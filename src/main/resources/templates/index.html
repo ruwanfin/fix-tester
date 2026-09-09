@@ -1117,7 +1117,8 @@
                 </div>
                 <div class="info-box" style="margin-bottom:15px;margin-top:20px;border-left:3px solid #ef5350;">
                     <h4>Required</h4>
-                    <p>These decide whether the order is accepted and which option path it takes.</p>
+                    <p>Sent on every request. Position effect is optional &mdash; leave it blank and the OMS
+                       infers open or close from the current holding.</p>
                 </div>
                 <div class="form-row">
                     <div class="form-group" style="flex:2;">
@@ -1164,23 +1165,6 @@
                 </div>
                 <div class="form-row">
                     <div class="form-group">
-                        <label for="oo_optionType">Option Type * (of the symbol)</label>
-                        <select id="oo_optionType" onchange="updateOptionExpected()">
-                            <option value="C" selected>C - Call</option>
-                            <option value="P">P - Put</option>
-                        </select>
-                    </div>
-                    <div class="form-group">
-                        <label for="oo_lotSize">Lot Size *</label>
-                        <input type="number" id="oo_lotSize" value="100" step="1" min="1" onchange="updateOptionExpected()">
-                    </div>
-                    <div class="form-group">
-                        <label for="oo_strike">Strike Price *</label>
-                        <input type="number" id="oo_strike" value="30" step="0.01" min="0" onchange="updateOptionExpected()">
-                    </div>
-                </div>
-                <div class="form-row">
-                    <div class="form-group">
                         <label for="oo_tradingAccountID">Trading Account ID * (option account)</label>
                         <input type="number" id="oo_tradingAccountID" value="101453" step="1" min="0">
                     </div>
@@ -1198,11 +1182,11 @@
                         </select>
                     </div>
                     <div class="form-group">
-                        <label for="oo_positionEffect">Position Effect *</label>
+                        <label for="oo_positionEffect">Position Effect (optional)</label>
                         <select id="oo_positionEffect">
                             <option value="O" selected>O - Open</option>
                             <option value="C">C - Close</option>
-                            <option value="">(blank &mdash; let OMS infer)</option>
+                            <option value="">(blank &mdash; omitted, OMS infers from holdings)</option>
                             <option value="Z">Z - invalid (negative test)</option>
                         </select>
                     </div>
@@ -1225,6 +1209,29 @@
                     <div class="form-group">
                         <label for="oo_custodianID">Custodian ID *</label>
                         <input type="number" id="oo_custodianID" value="755" step="1" min="0">
+                    </div>
+                </div>
+                <div class="info-box" style="margin-bottom:15px;margin-top:20px;border-left:3px solid #78909c;">
+                    <h4>Symbol reference &mdash; not sent</h4>
+                    <p>The OMS loads option type, lot size and strike from the symbol itself. These fields are
+                       never included in the request; they only drive the expected-result figures below, so set
+                       them to match the symbol you are trading.</p>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="oo_optionType">Option Type (from symbol)</label>
+                        <select id="oo_optionType" onchange="updateOptionExpected()">
+                            <option value="C" selected>C - Call</option>
+                            <option value="P">P - Put</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="oo_lotSize">Lot Size (from symbol)</label>
+                        <input type="number" id="oo_lotSize" value="100" step="1" min="1" onchange="updateOptionExpected()">
+                    </div>
+                    <div class="form-group">
+                        <label for="oo_strike">Strike Price (from symbol)</label>
+                        <input type="number" id="oo_strike" value="30" step="0.01" min="0" onchange="updateOptionExpected()">
                     </div>
                 </div>
                 <div class="info-box" style="margin-bottom:15px;margin-top:20px;border-left:3px solid #66bb6a;">
