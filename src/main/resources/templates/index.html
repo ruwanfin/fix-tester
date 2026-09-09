@@ -1211,29 +1211,6 @@
                         <input type="number" id="oo_custodianID" value="755" step="1" min="0">
                     </div>
                 </div>
-                <div class="info-box" style="margin-bottom:15px;margin-top:20px;border-left:3px solid #78909c;">
-                    <h4>Symbol reference &mdash; not sent</h4>
-                    <p>The OMS loads option type, lot size and strike from the symbol itself. These fields are
-                       never included in the request; they only drive the expected-result figures below, so set
-                       them to match the symbol you are trading.</p>
-                </div>
-                <div class="form-row">
-                    <div class="form-group">
-                        <label for="oo_optionType">Option Type (from symbol)</label>
-                        <select id="oo_optionType" onchange="updateOptionExpected()">
-                            <option value="C" selected>C - Call</option>
-                            <option value="P">P - Put</option>
-                        </select>
-                    </div>
-                    <div class="form-group">
-                        <label for="oo_lotSize">Lot Size (from symbol)</label>
-                        <input type="number" id="oo_lotSize" value="100" step="1" min="1" onchange="updateOptionExpected()">
-                    </div>
-                    <div class="form-group">
-                        <label for="oo_strike">Strike Price (from symbol)</label>
-                        <input type="number" id="oo_strike" value="30" step="0.01" min="0" onchange="updateOptionExpected()">
-                    </div>
-                </div>
                 <div class="info-box" style="margin-bottom:15px;margin-top:20px;border-left:3px solid #66bb6a;">
                     <h4>Expected result</h4>
                     <div id="oo_expected" style="font-size:0.85rem;line-height:1.7;"></div>
@@ -2520,7 +2497,7 @@
     const OO_DEFAULTS = {
         oo_host:'localhost', oo_port:'8085', oo_tcpPath:'/oms-streaming-api',
         oo_scenario:'coveredCall',
-        oo_symbol:'AAPLOOO', oo_exchange:'OPRA', oo_optionType:'C', oo_lotSize:'100', oo_strike:'30',
+        oo_symbol:'AAPLOOO', oo_exchange:'OPRA',
         oo_tradingAccountID:'101453', oo_loginId:'100683',
         oo_side:'2', oo_positionEffect:'O', oo_quantity:'5', oo_price:'2.50',
         oo_execBrokerID:'74', oo_custodianID:'755',
@@ -2533,19 +2510,30 @@
     /* Each preset only sets the fields that define the scenario; everything else is left alone so a
        half-configured form is not silently reset. 'custom' deliberately sets nothing. */
     const OO_SCENARIOS = {
-        coveredCall:        { oo_side:'2', oo_positionEffect:'O', oo_serviceType:'2', oo_optionType:'C', oo_remark:'covered call open' },
-        cashSecuredPut:     { oo_side:'2', oo_positionEffect:'O', oo_serviceType:'2', oo_optionType:'P', oo_remark:'cash secured put open' },
-        buyCallOpen:        { oo_side:'1', oo_positionEffect:'O', oo_serviceType:'2', oo_optionType:'C', oo_remark:'long call open' },
-        buyPutOpen:         { oo_side:'1', oo_positionEffect:'O', oo_serviceType:'2', oo_optionType:'P', oo_remark:'long put open' },
+        coveredCall:        { oo_side:'2', oo_positionEffect:'O', oo_serviceType:'2', oo_remark:'covered call open' },
+        cashSecuredPut:     { oo_side:'2', oo_positionEffect:'O', oo_serviceType:'2', oo_remark:'cash secured put open' },
+        buyCallOpen:        { oo_side:'1', oo_positionEffect:'O', oo_serviceType:'2', oo_remark:'long call open' },
+        buyPutOpen:         { oo_side:'1', oo_positionEffect:'O', oo_serviceType:'2', oo_remark:'long put open' },
         buyToClose:         { oo_side:'1', oo_positionEffect:'C', oo_serviceType:'2', oo_remark:'buy to close' },
         sellToClose:        { oo_side:'2', oo_positionEffect:'C', oo_serviceType:'2', oo_remark:'sell to close' },
         inferEffect:        { oo_side:'2', oo_positionEffect:'',  oo_serviceType:'2', oo_remark:'infer position effect' },
         amend:              { oo_serviceType:'4', oo_orderMode:'1', oo_remark:'amend option order' },
         cancel:             { oo_serviceType:'3', oo_orderMode:'1', oo_remark:'cancel option order' },
-        rejInsufficientBase:{ oo_side:'2', oo_positionEffect:'O', oo_serviceType:'2', oo_optionType:'C', oo_quantity:'51', oo_remark:'expect INSUFFICIENT_BASE_HOLDINGS' },
+        rejInsufficientBase:{ oo_side:'2', oo_positionEffect:'O', oo_serviceType:'2', oo_quantity:'51', oo_remark:'expect INSUFFICIENT_BASE_HOLDINGS' },
         rejBadEffect:       { oo_side:'2', oo_positionEffect:'Z', oo_serviceType:'2', oo_remark:'expect INVALID_POSITION_EFFECT' },
         custom:             {}
     };
+
+    /* Option type, lot size and strike come from the symbol in the OMS and are never sent. They are
+       mirrored here only so the expected figures below are real numbers. Add a row when you create a
+       new option symbol; an unknown symbol falls back to showing the formulas instead. */
+    const OO_SYMBOLS = {
+        AAPLOOO: { type:'C', lot:100, strike:30 }
+    };
+
+    function ooProfile() {
+        return OO_SYMBOLS[(ooVal('oo_symbol') || '').trim().toUpperCase()] || null;
+    }
 
     function applyOptionScenario() {
         const name = document.getElementById('oo_scenario').value;
@@ -2579,70 +2567,80 @@
         const box = document.getElementById('oo_expected');
         if (!box) return;
 
-        const svc     = ooVal('oo_serviceType');
-        const side    = ooVal('oo_side');
-        const effect  = ooVal('oo_positionEffect');
-        const optType = ooVal('oo_optionType');
-        const qty     = ooNum('oo_quantity');
-        const price   = ooNum('oo_price');
-        const lot     = ooNum('oo_lotSize') || 1;
-        const strike  = ooNum('oo_strike');
-
-        const shares  = qty * lot;
-        const premium = qty * lot * price;
-        const strikeValue = strike * qty * lot;
-        const note = '<span style="color:#78909c;">';
+        const svc    = ooVal('oo_serviceType');
+        const side   = ooVal('oo_side');
+        const effect = ooVal('oo_positionEffect');
+        const qty    = ooNum('oo_quantity');
+        const price  = ooNum('oo_price');
+        const note   = '<span style="color:#78909c;">';
 
         if (svc === '3') {
             box.innerHTML = '<b>Cancel</b> - releases the collateral still held for the unfilled quantity.<br>' +
                 'Filled quantity keeps its collateral: a fill converts pending into an open position.<br>' +
-                note + 'Cl Ord ID is required. The original must be in an cancellable status (offline orders are).</span>';
+                note + 'Cl Ord ID is required, and the original must be in a cancellable status.</span>';
             return;
         }
         if (svc === '4') {
             box.innerHTML = '<b>Amend</b> to ' + qty + ' contracts.<br>' +
                 'openSellQty/openBuyQty follows the new quantity.<br>' +
-                note + 'Known gap: blockQty and the underlying freeze do NOT currently follow an amend, ' +
-                'so the client stays over-collateralised. Cl Ord ID required.</span>';
+                note + 'Known gap: blockQty and the underlying freeze do NOT follow an amend, so the client ' +
+                'stays over-collateralised. Cl Ord ID required.</span>';
             return;
         }
         if (effect === 'Z') {
             box.innerHTML = '<b>Expected rejection:</b> INVALID_POSITION_EFFECT (OM0222).<br>' +
-                note + 'An unrecognised effect must be refused, not silently skipped - otherwise the order ' +
-                'reaches the exchange with no blocks at all.</span>';
+                note + 'An unrecognised effect must be refused, not silently skipped.</span>';
             return;
         }
 
-        const effectLabel = effect === '' ? 'inferred by OMS' : effect;
-        const isOpen  = effect === 'O' || effect === '';
-        const isSell  = side === '2';
+        const p = ooProfile();
+        if (!p) {
+            box.innerHTML = '<b>Unknown symbol</b> - add it to OO_SYMBOLS to see figures.<br>' +
+                'Call write: underlying frozen = qty x lot size, no cash.<br>' +
+                'Put write: cash blocked = strike x qty x lot size.<br>' +
+                'Buy to open: premium blocked = price x qty x lot size.';
+            return;
+        }
 
-        if (isSell && isOpen && optType === 'C') {
-            box.innerHTML = '<b>Covered call write</b> (positionEffect: ' + effectLabel + ')<br>' +
-                'Underlying frozen on the base account: <b>' + shares + '</b> shares (' + qty + ' x ' + lot + ')<br>' +
+        const shares      = qty * p.lot;
+        const premium     = qty * p.lot * price;
+        const strikeValue = p.strike * qty * p.lot;
+        const effectLabel = effect === '' ? 'omitted, inferred by OMS' : effect;
+        const isOpen      = effect === 'O' || effect === '';
+        const isSell      = side === '2';
+        const kind        = p.type === 'C' ? 'CALL' : 'PUT';
+        const head        = '<b>' + ooVal('oo_symbol') + '</b> is a ' + kind +
+                            ' (lot ' + p.lot + ', strike ' + p.strike + ')<br>';
+
+        if (isSell && isOpen && p.type === 'C') {
+            box.innerHTML = head + '<b>Covered call write</b> (positionEffect: ' + effectLabel + ')<br>' +
+                'Underlying frozen on the base account: <b>' + shares + '</b> shares (' + qty + ' x ' + p.lot + ')<br>' +
                 'Option holding: openSellQty <b>' + qty + '</b>, baseBlockQty <b>' + shares + '</b><br>' +
                 'Order value <b>' + ooMoney(premium) + '</b> &nbsp;|&nbsp; Cash: <b>unchanged</b>, block stays 0<br>' +
                 note + 'Shares are the collateral, never cash - any cash movement here is a defect.</span>';
-        } else if (isSell && isOpen && optType === 'P') {
-            box.innerHTML = '<b>Cash-secured put write</b> (positionEffect: ' + effectLabel + ')<br>' +
+        } else if (isSell && isOpen) {
+            box.innerHTML = head + '<b>Cash-secured put write</b> (positionEffect: ' + effectLabel + ')<br>' +
                 'Cash blocked = strike x qty x lot = <b>' + ooMoney(strikeValue) + '</b><br>' +
                 'Option holding: openSellQty <b>' + qty + '</b> &nbsp;|&nbsp; No underlying is frozen<br>' +
-                'Order blockAmount <b>' + ooMoney(strikeValue) + '</b>, buying power checked against it (not the premium)<br>' +
+                'Buying power is checked against the strike value, not the premium<br>' +
                 note + 'The block survives the fill - it backs the short position, not the pending order.</span>';
         } else if (isSell) {
-            box.innerHTML = '<b>Sell to close</b> - unwinds a long option position.<br>' +
+            box.innerHTML = head + '<b>Sell to close</b> - unwinds a long option position.<br>' +
                 'Requires longQty - blockQty &ge; ' + qty + ', else INSUFFICIENT_LONG_HOLDINGS (OM0220).<br>' +
                 'blockQty on the option holding rises by <b>' + qty + '</b>; no underlying is touched.';
-        } else if (!isSell && isOpen) {
-            box.innerHTML = '<b>Buy to open</b> (' + (optType === 'C' ? 'long call' : 'long put') + ')<br>' +
+        } else if (isOpen) {
+            box.innerHTML = head + '<b>Buy to open</b> (long ' + kind.toLowerCase() + ')<br>' +
                 'Premium blocked as cash: <b>' + ooMoney(premium) + '</b> plus commission<br>' +
                 'Option holding: openBuyQty <b>' + qty + '</b> &nbsp;|&nbsp; No underlying is frozen<br>' +
                 note + 'Buying an option creates no obligation, so nothing beyond the premium is held.</span>';
         } else {
-            box.innerHTML = '<b>Buy to close</b> - buys back a short option position.<br>' +
+            box.innerHTML = head + '<b>Buy to close</b> - buys back a short option position.<br>' +
                 'Requires shortQty - openBuyQty &ge; ' + qty + ', else INSUFFICIENT_SHORT_HOLDINGS (OM0219).<br>' +
-                'On the fill: shortQty falls by ' + qty + ', and for a call the <b>' + shares + '</b> frozen shares are released.<br>' +
-                note + 'For a put, the strike cash release currently has no path outside cancel/reverse - see open items.</span>';
+                'On the fill: shortQty falls by ' + qty +
+                (p.type === 'C' ? ', and the <b>' + shares + '</b> frozen shares are released.' : '.') + '<br>' +
+                note + (p.type === 'P'
+                    ? 'For a put, the strike cash release has no path outside cancel/reverse - see open items.'
+                    : '') + '</span>';
         }
     }
 
@@ -2740,8 +2738,8 @@
     }
 
     document.addEventListener('DOMContentLoaded', function () {
-        ['oo_quantity', 'oo_price', 'oo_side', 'oo_positionEffect', 'oo_optionType',
-         'oo_lotSize', 'oo_strike', 'oo_serviceType'].forEach(function (id) {
+        ['oo_quantity', 'oo_price', 'oo_side', 'oo_positionEffect',
+         'oo_symbol', 'oo_serviceType'].forEach(function (id) {
             const el = document.getElementById(id);
             if (!el) return;
             el.addEventListener('input', updateOptionExpected);
