@@ -41,6 +41,8 @@ public class PlaceOrderRequest {
     private int    ordCat           = 1;
     private int    bypassRms        = 0;
     private String remark           = "test";
+    /* Option position effect: "O" open, "C" close, blank to let the OMS infer it. */
+    private String positionEffect   = "";
     private int    execBrokerID     = 74;
     private int    custodianID      = 74;
     private String currencyCode     = "";

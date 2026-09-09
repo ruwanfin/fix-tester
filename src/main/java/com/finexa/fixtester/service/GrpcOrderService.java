@@ -188,6 +188,10 @@ public class GrpcOrderService {
         body.put("ordMode", request.getOrderMode());
         body.put("ordCat", request.getOrdCat());
         body.put("rmk", request.getRemark() != null ? request.getRemark() : "");
+        /* Sent only when set - the OMS infers open/close from holdings when the field is absent. */
+        if (notBlank(request.getPositionEffect())) {
+            body.put("positionEffect", request.getPositionEffect());
+        }
         body.put("execBrokerId", request.getExecBrokerID());
         body.put("custodyInstId", request.getCustodianID());
         body.put("currencyCode", request.getCurrencyCode());

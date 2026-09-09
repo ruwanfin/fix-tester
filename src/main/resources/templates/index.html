@@ -510,6 +510,7 @@
                 <button class="tab active" onclick="showTab('execution')">Execution Report</button>
                 <button class="tab" onclick="showTab('scenario')">Scenario / Lifecycle</button>
                 <button class="tab" onclick="showTab('placeorder')">Place Order (Netty TCP)</button>
+                <button class="tab" onclick="showTab('optionorder')">Option Order (Covered Call)</button>
                 <button class="tab" onclick="showTab('bulkorder')">Bulk Orders (Netty TCP)</button>
                 <button class="tab" onclick="showTab('fixdma')">FIXDMA (Bloomberg)</button>
                 <button class="tab" onclick="showTab('raw')">Raw Message</button>
@@ -1103,6 +1104,244 @@
                     <h4 style="color:#b0bec5;font-size:0.95rem;margin-bottom:10px;">Netty TCP Response</h4>
                     <div id="poResponseGrid" style="display:grid;grid-template-columns:1fr 1fr;gap:10px;font-size:0.85rem;">
                     </div>
+                </div>
+            </div>
+
+
+            <!-- Option Order (Covered Call) Tab -->
+            <div id="optionorder-tab" class="tab-content">
+                <div class="info-box" style="margin-bottom:15px;margin-top:20px;">
+                    <h4>Option Order &mdash; Covered Call (OPRA)</h4>
+                    <p>Pre-filled with the verified dev setup: AAPLOOO on OPRA, underlying AAPL held on the NSDQ account.</p>
+                    <p>Selling a call to open freezes <b>quantity &times; lot size</b> underlying shares. Cash must stay untouched.</p>
+                </div>
+                <div class="info-box" style="margin-bottom:15px;margin-top:20px;border-left:3px solid #ef5350;">
+                    <h4>Required</h4>
+                    <p>These decide whether the order is accepted and which option path it takes.</p>
+                </div>
+                <div class="form-row">
+                    <div class="form-group" style="flex:2;">
+                        <label for="oo_scenario">Scenario *</label>
+                        <select id="oo_scenario" onchange="applyOptionScenario()">
+                            <option value="coveredCall" selected>Covered call &mdash; SELL call to OPEN (freezes underlying)</option>
+                            <option value="cashSecuredPut">Cash-secured put &mdash; SELL put to OPEN (blocks strike cash)</option>
+                            <option value="buyCallOpen">Long call &mdash; BUY call to OPEN (blocks premium)</option>
+                            <option value="buyPutOpen">Long put &mdash; BUY put to OPEN (blocks premium)</option>
+                            <option value="buyToClose">BUY to CLOSE &mdash; buy back a short option</option>
+                            <option value="sellToClose">SELL to CLOSE &mdash; sell a long option</option>
+                            <option value="inferEffect">Infer effect &mdash; send no positionEffect</option>
+                            <option value="amend">AMEND an existing option order</option>
+                            <option value="cancel">CANCEL an existing option order</option>
+                            <option value="rejInsufficientBase">Reject &mdash; insufficient underlying (51 contracts)</option>
+                            <option value="rejBadEffect">Reject &mdash; invalid positionEffect (Z)</option>
+                            <option value="custom">Custom &mdash; set everything by hand</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="oo_serviceType">Service Type *</label>
+                        <select id="oo_serviceType" onchange="updateOptionExpected()">
+                            <option value="2" selected>2 - New</option>
+                            <option value="3">3 - Cancel</option>
+                            <option value="4">4 - Amend</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="oo_clOrdId">Cl Ord ID (required for amend/cancel)</label>
+                        <input type="text" id="oo_clOrdId" placeholder="auto-generated">
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="oo_symbol">Symbol *</label>
+                        <input type="text" id="oo_symbol" value="AAPLOOO">
+                    </div>
+                    <div class="form-group">
+                        <label for="oo_exchange">Exchange *</label>
+                        <input type="text" id="oo_exchange" value="OPRA">
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="oo_optionType">Option Type * (of the symbol)</label>
+                        <select id="oo_optionType" onchange="updateOptionExpected()">
+                            <option value="C" selected>C - Call</option>
+                            <option value="P">P - Put</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="oo_lotSize">Lot Size *</label>
+                        <input type="number" id="oo_lotSize" value="100" step="1" min="1" onchange="updateOptionExpected()">
+                    </div>
+                    <div class="form-group">
+                        <label for="oo_strike">Strike Price *</label>
+                        <input type="number" id="oo_strike" value="30" step="0.01" min="0" onchange="updateOptionExpected()">
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="oo_tradingAccountID">Trading Account ID * (option account)</label>
+                        <input type="number" id="oo_tradingAccountID" value="101453" step="1" min="0">
+                    </div>
+                    <div class="form-group">
+                        <label for="oo_loginId">Login ID * (mapped to cash 101167)</label>
+                        <input type="number" id="oo_loginId" value="100683" step="1" min="0">
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="oo_side">Side *</label>
+                        <select id="oo_side">
+                            <option value="1">1 - Buy</option>
+                            <option value="2" selected>2 - Sell (write the call)</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="oo_positionEffect">Position Effect *</label>
+                        <select id="oo_positionEffect">
+                            <option value="O" selected>O - Open</option>
+                            <option value="C">C - Close</option>
+                            <option value="">(blank &mdash; let OMS infer)</option>
+                            <option value="Z">Z - invalid (negative test)</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="oo_quantity">Quantity * (contracts)</label>
+                        <input type="number" id="oo_quantity" value="5" step="1" min="1">
+                    </div>
+                    <div class="form-group">
+                        <label for="oo_price">Price * (premium)</label>
+                        <input type="number" id="oo_price" value="2.50" step="0.01" min="0">
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="oo_execBrokerID">Exec Broker ID *</label>
+                        <input type="number" id="oo_execBrokerID" value="74" step="1" min="0">
+                    </div>
+                    <div class="form-group">
+                        <label for="oo_custodianID">Custodian ID *</label>
+                        <input type="number" id="oo_custodianID" value="755" step="1" min="0">
+                    </div>
+                </div>
+                <div class="info-box" style="margin-bottom:15px;margin-top:20px;border-left:3px solid #66bb6a;">
+                    <h4>Expected result</h4>
+                    <div id="oo_expected" style="font-size:0.85rem;line-height:1.7;"></div>
+                </div>
+                <div class="info-box" style="margin-bottom:15px;margin-top:20px;">
+                    <h4>Connection</h4>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="oo_host">Host</label>
+                        <input type="text" id="oo_host" value="localhost">
+                    </div>
+                    <div class="form-group">
+                        <label for="oo_port">Port</label>
+                        <input type="number" id="oo_port" value="8085" step="1" min="1" max="65535">
+                    </div>
+                    <div class="form-group">
+                        <label for="oo_tcpPath">TCP Path</label>
+                        <input type="text" id="oo_tcpPath" value="/oms-streaming-api">
+                    </div>
+                </div>
+                <div class="info-box" style="margin-bottom:15px;margin-top:20px;">
+                    <h4>Message Header</h4>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="oo_tenantCode">Tenant Code</label>
+                        <input type="text" id="oo_tenantCode" value="DEFAULT_TENANT">
+                    </div>
+                    <div class="form-group">
+                        <label for="oo_orgId">Org ID</label>
+                        <input type="number" id="oo_orgId" value="1" step="1" min="0">
+                    </div>
+                    <div class="form-group">
+                        <label for="oo_product">Product</label>
+                        <input type="number" id="oo_product" value="1" step="1" min="0">
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="oo_clientIp">Client IP</label>
+                        <input type="text" id="oo_clientIp" value="127.0.0.1">
+                    </div>
+                    <div class="form-group">
+                        <label for="oo_sessionId">Session ID</label>
+                        <input type="text" id="oo_sessionId" placeholder="auto-generated">
+                    </div>
+                    <div class="form-group">
+                        <label for="oo_componentId">Component ID</label>
+                        <input type="text" id="oo_componentId" value="OPTION-TESTER">
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="oo_unqReqId">Unique Req ID</label>
+                        <input type="text" id="oo_unqReqId" placeholder="auto-generated">
+                    </div>
+                    <div class="form-group">
+                        <label for="oo_customerNo">Customer No</label>
+                        <input type="text" id="oo_customerNo" value="">
+                    </div>
+                </div>
+                <div class="info-box" style="margin-bottom:15px;margin-top:20px;">
+                    <h4>Other</h4>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="oo_type">Order Type</label>
+                        <select id="oo_type">
+                            <option value="1">1 - Market</option>
+                            <option value="2" selected>2 - Limit</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="oo_tif">Time In Force</label>
+                        <select id="oo_tif">
+                            <option value="0" selected>0 - Day</option>
+                            <option value="1">1 - GTC</option>
+                            <option value="3">3 - IOC</option>
+                            <option value="4">4 - FOK</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="oo_orderMode">Order Mode</label>
+                        <select id="oo_orderMode">
+                            <option value="0" selected>0 - Normal (online)</option>
+                            <option value="1">1 - Offline (amendable/cancellable)</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="oo_ordCat">Ord Cat</label>
+                        <input type="number" id="oo_ordCat" value="1" step="1" min="0">
+                    </div>
+                    <div class="form-group">
+                        <label for="oo_bypassRms">Bypass RMS</label>
+                        <select id="oo_bypassRms">
+                            <option value="0" selected>0 - No (keep risk checks on)</option>
+                            <option value="1">1 - Yes</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="oo_remark">Remark</label>
+                        <input type="text" id="oo_remark" value="covered call test">
+                    </div>
+                </div>
+                <div class="button-group">
+                    <button class="btn btn-primary" onclick="sendOptionOrder()"><span>Send</span></button>
+                    <button class="btn btn-secondary" onclick="resetOptionOrderForm()">Reset to verified values</button>
+                </div>
+
+                <div id="ooResponsePanel" style="margin-top:20px;display:none;">
+                    <h4 style="color:#b0bec5;font-size:0.95rem;margin-bottom:10px;">Netty TCP Response</h4>
+                    <div id="ooResponseGrid" style="display:grid;grid-template-columns:1fr 1fr;gap:10px;font-size:0.85rem;"></div>
                 </div>
             </div>
 
@@ -2267,6 +2506,242 @@
             showLoading(false);
         }
     }
+
+
+    /* ---------------- Option Order (Covered Call) ---------------- */
+
+    const OO_DEFAULTS = {
+        oo_host:'localhost', oo_port:'8085', oo_tcpPath:'/oms-streaming-api',
+        oo_scenario:'coveredCall',
+        oo_symbol:'AAPLOOO', oo_exchange:'OPRA', oo_optionType:'C', oo_lotSize:'100', oo_strike:'30',
+        oo_tradingAccountID:'101453', oo_loginId:'100683',
+        oo_side:'2', oo_positionEffect:'O', oo_quantity:'5', oo_price:'2.50',
+        oo_execBrokerID:'74', oo_custodianID:'755',
+        oo_tenantCode:'DEFAULT_TENANT', oo_orgId:'1', oo_product:'1', oo_serviceType:'2',
+        oo_clOrdId:'', oo_clientIp:'127.0.0.1', oo_sessionId:'', oo_componentId:'OPTION-TESTER',
+        oo_unqReqId:'', oo_customerNo:'', oo_type:'2', oo_tif:'0', oo_orderMode:'0',
+        oo_ordCat:'1', oo_bypassRms:'0', oo_remark:'covered call test'
+    };
+
+    /* Each preset only sets the fields that define the scenario; everything else is left alone so a
+       half-configured form is not silently reset. 'custom' deliberately sets nothing. */
+    const OO_SCENARIOS = {
+        coveredCall:        { oo_side:'2', oo_positionEffect:'O', oo_serviceType:'2', oo_optionType:'C', oo_remark:'covered call open' },
+        cashSecuredPut:     { oo_side:'2', oo_positionEffect:'O', oo_serviceType:'2', oo_optionType:'P', oo_remark:'cash secured put open' },
+        buyCallOpen:        { oo_side:'1', oo_positionEffect:'O', oo_serviceType:'2', oo_optionType:'C', oo_remark:'long call open' },
+        buyPutOpen:         { oo_side:'1', oo_positionEffect:'O', oo_serviceType:'2', oo_optionType:'P', oo_remark:'long put open' },
+        buyToClose:         { oo_side:'1', oo_positionEffect:'C', oo_serviceType:'2', oo_remark:'buy to close' },
+        sellToClose:        { oo_side:'2', oo_positionEffect:'C', oo_serviceType:'2', oo_remark:'sell to close' },
+        inferEffect:        { oo_side:'2', oo_positionEffect:'',  oo_serviceType:'2', oo_remark:'infer position effect' },
+        amend:              { oo_serviceType:'4', oo_orderMode:'1', oo_remark:'amend option order' },
+        cancel:             { oo_serviceType:'3', oo_orderMode:'1', oo_remark:'cancel option order' },
+        rejInsufficientBase:{ oo_side:'2', oo_positionEffect:'O', oo_serviceType:'2', oo_optionType:'C', oo_quantity:'51', oo_remark:'expect INSUFFICIENT_BASE_HOLDINGS' },
+        rejBadEffect:       { oo_side:'2', oo_positionEffect:'Z', oo_serviceType:'2', oo_remark:'expect INVALID_POSITION_EFFECT' },
+        custom:             {}
+    };
+
+    function applyOptionScenario() {
+        const name = document.getElementById('oo_scenario').value;
+        const preset = OO_SCENARIOS[name] || {};
+        Object.keys(preset).forEach(function (id) {
+            const el = document.getElementById(id);
+            if (el) el.value = preset[id];
+        });
+        updateOptionExpected();
+    }
+
+    function resetOptionOrderForm() {
+        Object.keys(OO_DEFAULTS).forEach(function (id) {
+            const el = document.getElementById(id);
+            if (el) el.value = OO_DEFAULTS[id];
+        });
+        document.getElementById('ooResponsePanel').style.display = 'none';
+        updateOptionExpected();
+    }
+
+    function ooNum(id) { return parseFloat(document.getElementById(id).value) || 0; }
+    function ooVal(id) { return document.getElementById(id).value; }
+    function ooMoney(v) { return v.toFixed(2); }
+
+    /* Mirrors the OMS risk logic so a wrong result is obvious before you look at the DB:
+       call write  -> underlying frozen  (qty x lot shares), no cash
+       put write   -> strike cash blocked (strike x qty x lot)
+       any buy     -> premium blocked as cash (price x qty x lot)
+       close       -> the matching collateral is released on the fill, not at placement */
+    function updateOptionExpected() {
+        const box = document.getElementById('oo_expected');
+        if (!box) return;
+
+        const svc     = ooVal('oo_serviceType');
+        const side    = ooVal('oo_side');
+        const effect  = ooVal('oo_positionEffect');
+        const optType = ooVal('oo_optionType');
+        const qty     = ooNum('oo_quantity');
+        const price   = ooNum('oo_price');
+        const lot     = ooNum('oo_lotSize') || 1;
+        const strike  = ooNum('oo_strike');
+
+        const shares  = qty * lot;
+        const premium = qty * lot * price;
+        const strikeValue = strike * qty * lot;
+        const note = '<span style="color:#78909c;">';
+
+        if (svc === '3') {
+            box.innerHTML = '<b>Cancel</b> - releases the collateral still held for the unfilled quantity.<br>' +
+                'Filled quantity keeps its collateral: a fill converts pending into an open position.<br>' +
+                note + 'Cl Ord ID is required. The original must be in an cancellable status (offline orders are).</span>';
+            return;
+        }
+        if (svc === '4') {
+            box.innerHTML = '<b>Amend</b> to ' + qty + ' contracts.<br>' +
+                'openSellQty/openBuyQty follows the new quantity.<br>' +
+                note + 'Known gap: blockQty and the underlying freeze do NOT currently follow an amend, ' +
+                'so the client stays over-collateralised. Cl Ord ID required.</span>';
+            return;
+        }
+        if (effect === 'Z') {
+            box.innerHTML = '<b>Expected rejection:</b> INVALID_POSITION_EFFECT (OM0222).<br>' +
+                note + 'An unrecognised effect must be refused, not silently skipped - otherwise the order ' +
+                'reaches the exchange with no blocks at all.</span>';
+            return;
+        }
+
+        const effectLabel = effect === '' ? 'inferred by OMS' : effect;
+        const isOpen  = effect === 'O' || effect === '';
+        const isSell  = side === '2';
+
+        if (isSell && isOpen && optType === 'C') {
+            box.innerHTML = '<b>Covered call write</b> (positionEffect: ' + effectLabel + ')<br>' +
+                'Underlying frozen on the base account: <b>' + shares + '</b> shares (' + qty + ' x ' + lot + ')<br>' +
+                'Option holding: openSellQty <b>' + qty + '</b>, baseBlockQty <b>' + shares + '</b><br>' +
+                'Order value <b>' + ooMoney(premium) + '</b> &nbsp;|&nbsp; Cash: <b>unchanged</b>, block stays 0<br>' +
+                note + 'Shares are the collateral, never cash - any cash movement here is a defect.</span>';
+        } else if (isSell && isOpen && optType === 'P') {
+            box.innerHTML = '<b>Cash-secured put write</b> (positionEffect: ' + effectLabel + ')<br>' +
+                'Cash blocked = strike x qty x lot = <b>' + ooMoney(strikeValue) + '</b><br>' +
+                'Option holding: openSellQty <b>' + qty + '</b> &nbsp;|&nbsp; No underlying is frozen<br>' +
+                'Order blockAmount <b>' + ooMoney(strikeValue) + '</b>, buying power checked against it (not the premium)<br>' +
+                note + 'The block survives the fill - it backs the short position, not the pending order.</span>';
+        } else if (isSell) {
+            box.innerHTML = '<b>Sell to close</b> - unwinds a long option position.<br>' +
+                'Requires longQty - blockQty &ge; ' + qty + ', else INSUFFICIENT_LONG_HOLDINGS (OM0220).<br>' +
+                'blockQty on the option holding rises by <b>' + qty + '</b>; no underlying is touched.';
+        } else if (!isSell && isOpen) {
+            box.innerHTML = '<b>Buy to open</b> (' + (optType === 'C' ? 'long call' : 'long put') + ')<br>' +
+                'Premium blocked as cash: <b>' + ooMoney(premium) + '</b> plus commission<br>' +
+                'Option holding: openBuyQty <b>' + qty + '</b> &nbsp;|&nbsp; No underlying is frozen<br>' +
+                note + 'Buying an option creates no obligation, so nothing beyond the premium is held.</span>';
+        } else {
+            box.innerHTML = '<b>Buy to close</b> - buys back a short option position.<br>' +
+                'Requires shortQty - openBuyQty &ge; ' + qty + ', else INSUFFICIENT_SHORT_HOLDINGS (OM0219).<br>' +
+                'On the fill: shortQty falls by ' + qty + ', and for a call the <b>' + shares + '</b> frozen shares are released.<br>' +
+                note + 'For a put, the strike cash release currently has no path outside cancel/reverse - see open items.</span>';
+        }
+    }
+
+    async function sendOptionOrder() {
+        showLoading(true);
+        document.getElementById('ooResponsePanel').style.display = 'none';
+
+        const serviceType = parseInt(ooVal('oo_serviceType')) || 2;
+        const clOrdId = ooVal('oo_clOrdId') || '';
+        if ((serviceType === 3 || serviceType === 4) && !clOrdId.trim()) {
+            showLoading(false);
+            displayResponse({ error: 'Cl Ord ID is required for amend/cancel' }, false);
+            addLogEntry('[OPTION/' + serviceLabel(serviceType) + '] Cl Ord ID is required', 'sent');
+            return;
+        }
+
+        const request = {
+            grpcHost:         ooVal('oo_host'),
+            grpcPort:         parseInt(ooVal('oo_port')) || 8085,
+            tcpPath:          ooVal('oo_tcpPath') || '/oms-streaming-api',
+            product:          parseInt(ooVal('oo_product')) || 1,
+            tenantCode:       ooVal('oo_tenantCode'),
+            orgId:            parseInt(ooVal('oo_orgId')) || 1,
+            loginId:          parseInt(ooVal('oo_loginId')) || 0,
+            clientIp:         ooVal('oo_clientIp'),
+            sessionId:        ooVal('oo_sessionId') || '',
+            componentId:      ooVal('oo_componentId'),
+            unqReqId:         ooVal('oo_unqReqId') || '',
+            serviceType:      serviceType,
+            symbol:           ooVal('oo_symbol'),
+            exchange:         ooVal('oo_exchange'),
+            price:            ooNum('oo_price'),
+            quantity:         ooNum('oo_quantity'),
+            side:             parseInt(ooVal('oo_side')),
+            type:             ooVal('oo_type'),
+            tif:              parseInt(ooVal('oo_tif')),
+            positionEffect:   ooVal('oo_positionEffect'),
+            tradingAccountID: parseInt(ooVal('oo_tradingAccountID')) || 0,
+            execBrokerID:     parseInt(ooVal('oo_execBrokerID')) || 0,
+            custodianID:      parseInt(ooVal('oo_custodianID')) || 0,
+            customerNo:       ooVal('oo_customerNo'),
+            clOrdId:          clOrdId,
+            orderMode:        parseInt(ooVal('oo_orderMode')) || 0,
+            ordCat:           parseInt(ooVal('oo_ordCat')) || 1,
+            bypassRms:        parseInt(ooVal('oo_bypassRms')),
+            remark:           ooVal('oo_remark')
+        };
+
+        try {
+            const response = await fetch('/api/grpc/place-order', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(request)
+            });
+            const result = await response.json();
+            displayResponse(result, result.success);
+            renderOoResponse(result);
+            addLogEntry(
+                '[OPTION/' + serviceLabel(serviceType) + '] ' + ooVal('oo_scenario') + ' ' + request.symbol + ' ' +
+                (request.side === 1 ? 'BUY' : 'SELL') + ' ' + request.quantity + '@' + request.price +
+                ' effect=' + (request.positionEffect || 'infer') +
+                ' -> ' + (result.success ? (result.statusDescription || 'OK') : 'FAILED'),
+                'sent'
+            );
+            if (result.clOrdId) { document.getElementById('oo_clOrdId').value = result.clOrdId; }
+            updateConnectionStatus(true);
+        } catch (error) {
+            displayResponse({ error: error.message }, false);
+            addLogEntry('Option order error: ' + error.message, 'sent');
+            updateConnectionStatus(false);
+        } finally {
+            showLoading(false);
+        }
+    }
+
+    function renderOoResponse(r) {
+        const fields = [
+            ['Success',            r.success ? 'Yes' : 'No'],
+            ['Cl Ord ID',          r.clOrdId || '-'],
+            ['Status',             r.status],
+            ['Status Description', r.statusDescription || '-'],
+            ['Reference',          r.reference || '-'],
+            ['RTT (ms)',           r.rttMs],
+            ['Error Code',         r.errorCode || 0],
+            ['Error Message',      r.errorMessage || '-'],
+            ['Error Detail',       r.errorDetail || '-'],
+            ['Message',            r.message || '-']
+        ];
+        document.getElementById('ooResponseGrid').innerHTML = fields.map(function (f) {
+            return '<div style="background:rgba(0,0,0,0.3);border-radius:6px;padding:10px;">' +
+                '<div style="color:#78909c;font-size:0.75rem;margin-bottom:4px;">' + f[0] + '</div>' +
+                '<div style="font-family:Consolas,Monaco,monospace;word-break:break-all;">' + f[1] + '</div></div>';
+        }).join('');
+        document.getElementById('ooResponsePanel').style.display = 'block';
+    }
+
+    document.addEventListener('DOMContentLoaded', function () {
+        ['oo_quantity', 'oo_price', 'oo_side', 'oo_positionEffect', 'oo_optionType',
+         'oo_lotSize', 'oo_strike', 'oo_serviceType'].forEach(function (id) {
+            const el = document.getElementById(id);
+            if (!el) return;
+            el.addEventListener('input', updateOptionExpected);
+            el.addEventListener('change', updateOptionExpected);
+        });
+        updateOptionExpected();
+    });
 
     function serviceLabel(serviceType) {
         if (serviceType === 3) return 'Cancel';
