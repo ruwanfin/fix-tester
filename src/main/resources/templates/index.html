@@ -2532,7 +2532,9 @@
     };
 
     function ooProfile() {
-        return OO_SYMBOLS[(ooVal('oo_symbol') || '').trim().toUpperCase()] || null;
+        /* Key built on its own line - a bracket immediately followed by a parenthesis is Thymeleaf inline-expression syntax. */
+        var key = (ooVal('oo_symbol') || '').trim().toUpperCase();
+        return OO_SYMBOLS[key] || null;
     }
 
     function applyOptionScenario() {
