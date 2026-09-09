@@ -510,7 +510,7 @@
                 <button class="tab active" onclick="showTab('execution')">Execution Report</button>
                 <button class="tab" onclick="showTab('scenario')">Scenario / Lifecycle</button>
                 <button class="tab" onclick="showTab('placeorder')">Place Order (Netty TCP)</button>
-                <button class="tab" onclick="showTab('optionorder')">Option Order (Covered Call)</button>
+                <button class="tab" onclick="showTab('optionorder')">Option Orders</button>
                 <button class="tab" onclick="showTab('bulkorder')">Bulk Orders (Netty TCP)</button>
                 <button class="tab" onclick="showTab('fixdma')">FIXDMA (Bloomberg)</button>
                 <button class="tab" onclick="showTab('raw')">Raw Message</button>
@@ -1111,9 +1111,9 @@
             <!-- Option Order (Covered Call) Tab -->
             <div id="optionorder-tab" class="tab-content">
                 <div class="info-box" style="margin-bottom:15px;margin-top:20px;">
-                    <h4>Option Order &mdash; Covered Call (OPRA)</h4>
-                    <p>Pre-filled with the verified dev setup: AAPLOOO on OPRA, underlying AAPL held on the NSDQ account.</p>
-                    <p>Selling a call to open freezes <b>quantity &times; lot size</b> underlying shares. Cash must stay untouched.</p>
+                    <h4>Option Orders</h4>
+                    <p>Covers every option order kind. Pre-filled with the verified dev setup: AAPLOOO on OPRA, underlying AAPL on the NSDQ account.</p>
+                    <p>Pick a scenario to set side, position effect and service type; the expected result updates as you type.</p>
                 </div>
                 <div class="info-box" style="margin-bottom:15px;margin-top:20px;border-left:3px solid #ef5350;">
                     <h4>Required</h4>
@@ -2508,7 +2508,7 @@
     }
 
 
-    /* ---------------- Option Order (Covered Call) ---------------- */
+    /* ---------------- Option Orders ---------------- */
 
     const OO_DEFAULTS = {
         oo_host:'localhost', oo_port:'8085', oo_tcpPath:'/oms-streaming-api',
