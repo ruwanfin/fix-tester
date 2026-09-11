@@ -57,6 +57,11 @@ customer:
   data:
     file: classpath:customerDetails.txt
 
+# Saved form presets (plain writable file path, created on first save)
+preset:
+  data:
+    file: ${PRESET_FILE:./presets.json}
+
 # Logging configuration
 logging:
   level:

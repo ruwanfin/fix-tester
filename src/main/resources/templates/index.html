@@ -481,6 +481,59 @@
             to { transform: rotate(360deg); }
         }
 
+        .preset-bar {
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            gap: 8px;
+            background: rgba(79, 195, 247, 0.07);
+            border: 1px solid rgba(79, 195, 247, 0.25);
+            border-radius: 10px;
+            padding: 10px 12px;
+            margin-bottom: 20px;
+        }
+
+        .preset-bar .preset-title {
+            color: #4fc3f7;
+            font-size: 0.8rem;
+            font-weight: 600;
+            letter-spacing: 0.5px;
+            text-transform: uppercase;
+            margin-right: 4px;
+        }
+
+        .preset-bar select,
+        .preset-bar input {
+            width: auto;
+            padding: 7px 10px;
+            font-size: 0.85rem;
+        }
+
+        .preset-bar select { min-width: 190px; max-width: 260px; }
+        .preset-bar input  { min-width: 150px; }
+
+        .preset-bar .btn {
+            padding: 7px 12px;
+            font-size: 0.8rem;
+        }
+
+        .preset-bar .preset-sep {
+            width: 1px;
+            align-self: stretch;
+            background: rgba(255, 255, 255, 0.12);
+            margin: 0 4px;
+        }
+
+        .preset-status {
+            font-size: 0.8rem;
+            color: #78909c;
+            margin-left: auto;
+            padding-left: 8px;
+        }
+
+        .preset-status.ok  { color: #66bb6a; }
+        .preset-status.err { color: #ef5350; }
+
         footer {
             text-align: center;
             padding: 30px 0;
@@ -518,6 +571,8 @@
 
             <!-- Execution Report Tab -->
             <div id="execution-tab" class="tab-content active">
+                <div class="preset-bar" data-preset-category="execution"></div>
+
                 <div class="info-box">
                     <h4>Quick Actions</h4>
                     <p>Click a button below to auto-fill common execution scenarios</p>
@@ -720,6 +775,8 @@
 
             <!-- Scenario / Lifecycle Tab -->
             <div id="scenario-tab" class="tab-content">
+                <div class="preset-bar" data-preset-category="scenario"></div>
+
                 <div class="info-box">
                     <h4>Trade Lifecycle Scenario</h4>
                     <p>Define base order fields and execution steps. Click <strong>Send Scenario</strong> to send all messages in sequence automatically.</p>
@@ -855,6 +912,8 @@
 
             <!-- Place Order (Netty TCP) Tab -->
             <div id="placeorder-tab" class="tab-content">
+                <div class="preset-bar" data-preset-category="placeorder"></div>
+
                 <div class="info-box">
                     <h4>Place Order via Netty TCP</h4>
                     <p>Send an order request directly to the OMS Netty TCP service.</p>
@@ -1110,6 +1169,8 @@
 
             <!-- Option Order (Covered Call) Tab -->
             <div id="optionorder-tab" class="tab-content">
+                <div class="preset-bar" data-preset-category="optionorder"></div>
+
                 <div class="info-box" style="margin-bottom:15px;margin-top:20px;">
                     <h4>Option Orders</h4>
                     <p>Covers every option order kind. Pre-filled with the verified dev setup: AAPLOOO on OPRA, underlying AAPL on the NSDQ account.</p>
@@ -1331,6 +1392,8 @@
 
             <!-- Bulk Orders (Netty TCP) Tab -->
             <div id="bulkorder-tab" class="tab-content">
+                <div class="preset-bar" data-preset-category="bulkorder"></div>
+
                 <div class="info-box">
                     <h4>Bulk Orders via Netty TCP</h4>
                     <p id="bo_modeDesc">Send concurrent orders using customer records from <strong>customerDetails.txt</strong>. The first N records override <em>tradingAccountID</em> and <em>customerNo</em> on each order.</p>
@@ -1620,6 +1683,8 @@
 
             <!-- FIXDMA (Bloomberg) Tab -->
             <div id="fixdma-tab" class="tab-content">
+                <div class="preset-bar" data-preset-category="fixdma"></div>
+
                 <div class="info-box">
                     <h4>FIXDMA Bloomberg-Style Orders</h4>
                     <p>Simulate Bloomberg DMA order messages published to the <strong>from-exchange</strong> Kafka topic. OMS will receive and route to exchange.</p>
@@ -3167,6 +3232,278 @@
         document.getElementById('bo_mFillQty').value      = '0';
         document.getElementById('boSummaryPanel').style.display = 'none';
     }
+
+    /* ── Presets ──────────────────────────────────────────────────────────
+       Named snapshots of a tab's form values, stored server-side in presets.json
+       so they survive restarts and can be shared with the rest of the team. */
+
+    const PRESET_FIELDS = {
+        execution: [
+            'sessionId', 'msgSeqNum', 'senderCompId', 'targetCompId',
+            'account', 'execId', 'clOrdId', 'orderId',
+            'symbol', 'exchange', 'side', 'ordType', 'quantity', 'price',
+            'execType', 'fillQty', 'fillPrice', 'cumQty', 'leavesQty', 'avgPrice',
+            'origClOrdId', 'rejectReason', 'rejectCode'
+        ],
+        scenario: [
+            'sc_sessionId', 'sc_senderCompId', 'sc_targetCompId', 'sc_account',
+            'sc_clOrdId', 'sc_orderId', 'sc_symbol', 'sc_exchange',
+            'sc_side', 'sc_ordType', 'sc_quantity', 'sc_price'
+        ],
+        placeorder: [
+            'po_host', 'po_port', 'po_tcpPath',
+            'po_product', 'po_tenantCode', 'po_loginId', 'po_clientIp',
+            'po_sessionId', 'po_componentId', 'po_unqReqId', 'po_serviceType',
+            'po_symbol', 'po_exchange', 'po_side', 'po_type', 'po_quantity', 'po_price',
+            'po_tif', 'po_tradingAccountID', 'po_tradingAccountNo', 'po_currencyCode',
+            'po_tradeDate', 'po_customerNo', 'po_clOrdId', 'po_deskOrderRef', 'po_remark',
+            'po_ordCat', 'po_orderMode', 'po_cancelAllChildren',
+            'po_execBrokerID', 'po_custodianID', 'po_bypassRms',
+            'po_minPrice', 'po_maxPrice', 'po_lstTrdPrice', 'po_prvClsPrice',
+            'po_todayClsPrice', 'po_instruType', 'po_dClsQty', 'po_mFillQty'
+        ],
+        optionorder: Object.keys(OO_DEFAULTS),
+        bulkorder: [
+            'bo_useSameAccount', 'bo_sameAccountID', 'bo_sameCustomerNo', 'bo_orderCount',
+            'bo_host', 'bo_port', 'bo_tcpPath',
+            'bo_product', 'bo_tenantCode', 'bo_loginId', 'bo_clientIp',
+            'bo_componentId', 'bo_serviceType',
+            'bo_symbol', 'bo_exchange', 'bo_side', 'bo_type', 'bo_tif',
+            'bo_quantity', 'bo_price', 'bo_tradingAccountNo', 'bo_currencyCode',
+            'bo_tradeDate', 'bo_deskOrderRef', 'bo_remark',
+            'bo_ordCat', 'bo_orderMode', 'bo_cancelAllChildren',
+            'bo_execBrokerID', 'bo_custodianID', 'bo_bypassRms',
+            'bo_minPrice', 'bo_maxPrice', 'bo_lstTrdPrice', 'bo_prvClsPrice',
+            'bo_todayClsPrice', 'bo_instruType', 'bo_dClsQty', 'bo_mFillQty'
+        ],
+        fixdma: [
+            'dma_msgType', 'dma_sessionId', 'dma_msgSeqNum',
+            'dma_senderCompId', 'dma_targetCompId', 'dma_senderSubId',
+            'dma_clOrdId', 'dma_origClOrdId', 'dma_account',
+            'dma_symbol', 'dma_securityId', 'dma_securityIdSource',
+            'dma_side', 'dma_ordType', 'dma_quantity', 'dma_price', 'dma_tif',
+            'dma_handlInst_d', 'dma_handlInst_g', 'dma_handlInst_f',
+            'dma_minQty', 'dma_cancelText'
+        ]
+    };
+
+    const PRESET_LABELS = {
+        execution:   'Execution Report presets',
+        scenario:    'Scenario presets',
+        placeorder:  'Place Order presets',
+        optionorder: 'Option Order presets',
+        bulkorder:   'Bulk Order presets',
+        fixdma:      'FIXDMA presets'
+    };
+
+    /* Re-run the tab's own visibility / derived-value logic after values are injected. */
+    const PRESET_AFTER_LOAD = {
+        execution:   toggleExecFields,
+        placeorder:  null,
+        optionorder: updateOptionExpected,
+        bulkorder:   toggleBulkMode,
+        fixdma:      toggleDmaFields,
+        scenario:    null
+    };
+
+    const presetCache = {};
+
+    function presetCapture(category) {
+        const data = {};
+        (PRESET_FIELDS[category] || []).forEach(function (id) {
+            const el = document.getElementById(id);
+            if (!el) return;
+            data[id] = el.type === 'checkbox' ? el.checked : el.value;
+        });
+        /* The scenario tab's value is mostly its step table, so it travels with the preset. */
+        if (category === 'scenario') data.steps = collectScenarioSteps();
+        return data;
+    }
+
+    function presetApply(category, data) {
+        if (!data) return;
+        (PRESET_FIELDS[category] || []).forEach(function (id) {
+            if (!(id in data)) return;              // field added after this preset was saved
+            const el = document.getElementById(id);
+            if (!el) return;
+            if (el.type === 'checkbox') el.checked = !!data[id];
+            else el.value = data[id];
+        });
+
+        if (category === 'scenario' && Array.isArray(data.steps)) {
+            document.getElementById('scenarioStepsBody').innerHTML = '';
+            stepRowId = 0;
+            data.steps.forEach(function (s) { addScenarioStep(s); });
+        }
+
+        const after = PRESET_AFTER_LOAD[category];
+        if (after) after();
+    }
+
+    function presetStatus(category, message, kind) {
+        const el = document.getElementById('preset_status_' + category);
+        if (!el) return;
+        el.textContent = message || '';
+        el.className = 'preset-status' + (kind ? ' ' + kind : '');
+        if (message) {
+            clearTimeout(el._timer);
+            el._timer = setTimeout(function () { el.textContent = ''; el.className = 'preset-status'; }, 4000);
+        }
+    }
+
+    async function presetRefresh(category, selectName) {
+        const select = document.getElementById('preset_select_' + category);
+        if (!select) return;
+        const keep = selectName !== undefined ? selectName : select.value;
+
+        try {
+            const response = await fetch('/api/presets/' + category);
+            const list = await response.json();
+            presetCache[category] = {};
+            list.forEach(function (p) { presetCache[category][p.name] = p; });
+
+            select.innerHTML = '<option value="">' +
+                (list.length ? '&mdash; select a preset &mdash;' : '&mdash; no saved presets &mdash;') + '</option>' +
+                list.map(function (p) {
+                    const saved = p.savedAt ? p.savedAt.substring(0, 16).replace('T', ' ') : '';
+                    return '<option value="' + escapeAttr(p.name) + '"' + (p.name === keep ? ' selected' : '') +
+                           ' title="saved ' + escapeAttr(saved) + '">' + escapeHtml(p.name) + '</option>';
+                }).join('');
+        } catch (error) {
+            presetStatus(category, 'Cannot reach preset store: ' + error.message, 'err');
+        }
+    }
+
+    function presetLoad(category) {
+        const name = document.getElementById('preset_select_' + category).value;
+        if (!name) { presetStatus(category, 'Pick a preset first', 'err'); return; }
+
+        const preset = (presetCache[category] || {})[name];
+        if (!preset) { presetStatus(category, 'Preset not found — refreshing', 'err'); presetRefresh(category); return; }
+
+        presetApply(category, preset.data);
+        document.getElementById('preset_name_' + category).value = name;
+        presetStatus(category, 'Loaded "' + name + '"', 'ok');
+        addLogEntry('[PRESET] loaded ' + category + '/' + name, 'received');
+    }
+
+    async function presetSave(category) {
+        const nameInput = document.getElementById('preset_name_' + category);
+        const name = nameInput.value.trim();
+        if (!name) { presetStatus(category, 'Enter a name to save under', 'err'); nameInput.focus(); return; }
+
+        if ((presetCache[category] || {})[name] &&
+            !confirm('Preset "' + name + '" already exists. Overwrite it?')) {
+            return;
+        }
+
+        try {
+            const response = await fetch('/api/presets/' + category, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ name: name, category: category, data: presetCapture(category) })
+            });
+            const result = await response.json();
+            if (!response.ok) { presetStatus(category, result.error || 'Save failed', 'err'); return; }
+
+            await presetRefresh(category, name);
+            presetStatus(category, 'Saved "' + name + '"', 'ok');
+            addLogEntry('[PRESET] saved ' + category + '/' + name, 'sent');
+        } catch (error) {
+            presetStatus(category, 'Save failed: ' + error.message, 'err');
+        }
+    }
+
+    async function presetDelete(category) {
+        const name = document.getElementById('preset_select_' + category).value;
+        if (!name) { presetStatus(category, 'Pick a preset to delete', 'err'); return; }
+        if (!confirm('Delete preset "' + name + '"? This cannot be undone.')) return;
+
+        try {
+            const response = await fetch('/api/presets/' + category + '/' + encodeURIComponent(name), { method: 'DELETE' });
+            presetStatus(category, response.ok ? 'Deleted "' + name + '"' : 'Preset not found', response.ok ? 'ok' : 'err');
+            document.getElementById('preset_name_' + category).value = '';
+            await presetRefresh(category, '');
+        } catch (error) {
+            presetStatus(category, 'Delete failed: ' + error.message, 'err');
+        }
+    }
+
+    async function presetExport(category) {
+        try {
+            const response = await fetch('/api/presets');
+            const all = await response.json();
+            const blob = new Blob([JSON.stringify(all, null, 2)], { type: 'application/json' });
+            const url  = URL.createObjectURL(blob);
+            const a    = document.createElement('a');
+            a.href = url;
+            a.download = 'finexa-fix-tester-presets.json';
+            a.click();
+            URL.revokeObjectURL(url);
+            presetStatus(category, 'Exported all presets', 'ok');
+        } catch (error) {
+            presetStatus(category, 'Export failed: ' + error.message, 'err');
+        }
+    }
+
+    async function presetImport(category, input) {
+        const file = input.files && input.files[0];
+        if (!file) return;
+        try {
+            const text = await file.text();
+            const response = await fetch('/api/presets/import', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: text
+            });
+            const result = await response.json();
+            if (!response.ok) { presetStatus(category, result.error || 'Import failed', 'err'); return; }
+
+            Object.keys(PRESET_FIELDS).forEach(function (c) { presetRefresh(c); });
+            presetStatus(category, 'Imported ' + result.imported + ' preset(s)', 'ok');
+        } catch (error) {
+            presetStatus(category, 'Import failed: ' + error.message, 'err');
+        } finally {
+            input.value = '';
+        }
+    }
+
+    function escapeHtml(s) {
+        return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+    }
+
+    function escapeAttr(s) {
+        return escapeHtml(s).replace(/"/g, '&quot;');
+    }
+
+    function renderPresetBars() {
+        document.querySelectorAll('.preset-bar').forEach(function (bar) {
+            const category = bar.getAttribute('data-preset-category');
+            bar.innerHTML =
+                '<span class="preset-title" title="' + escapeAttr(PRESET_LABELS[category] || 'Presets') + '">Presets</span>' +
+                '<select id="preset_select_' + category + '" ondblclick="presetLoad(\'' + category + '\')">' +
+                '<option value="">&mdash; no saved presets &mdash;</option></select>' +
+                '<button type="button" class="btn btn-secondary" onclick="presetLoad(\'' + category + '\')">Load</button>' +
+                '<button type="button" class="btn btn-secondary" onclick="presetDelete(\'' + category + '\')">Delete</button>' +
+                '<span class="preset-sep"></span>' +
+                '<input type="text" id="preset_name_' + category + '" placeholder="preset name" ' +
+                'onkeydown="if(event.key===\'Enter\'){event.preventDefault();presetSave(\'' + category + '\');}">' +
+                '<button type="button" class="btn btn-success" onclick="presetSave(\'' + category + '\')">Save</button>' +
+                '<span class="preset-sep"></span>' +
+                '<button type="button" class="btn btn-secondary" onclick="presetExport(\'' + category + '\')" ' +
+                'title="Download every saved preset as JSON">Export</button>' +
+                '<button type="button" class="btn btn-secondary" ' +
+                'onclick="document.getElementById(\'preset_file_' + category + '\').click()" ' +
+                'title="Load presets from an exported JSON file">Import</button>' +
+                '<input type="file" accept="application/json" style="display:none;" ' +
+                'id="preset_file_' + category + '" onchange="presetImport(\'' + category + '\', this)">' +
+                '<span class="preset-status" id="preset_status_' + category + '"></span>';
+
+            presetRefresh(category);
+        });
+    }
+
+    renderPresetBars();
 </script>
 </body>
 </html>
